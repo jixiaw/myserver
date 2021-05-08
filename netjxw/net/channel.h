@@ -16,22 +16,25 @@ class Channel : public noncopyable
 public:
     typedef std::function<void()> EventCallBack;
 
-    Channel(EventLoop* loop, int fd);
+    Channel(EventLoop* loop, int fdarg);
 
     void handleEvent();     // 处理事件
     void setReadCallBack(const EventCallBack& cb) {readCallBack_ = cb;}
     void setWriteCallBack(const EventCallBack& cb) {writeCallBack_ = cb;}
     void setErrorCallBack(const EventCallBack& cb) {errorCallBack_ = cb;}
 
-    int fd() const {return fd_;};
-    int events() const {return events_;};
-    void setRevents(int revt) {revents_ = revt;};
-    bool isNoneEvent() const {return events_ == kNoneEvent;};
+    int fd() const {return fd_;}
+    int events() const {return events_;}
+    void setRevents(int revt) {revents_ = revt;}
+    bool isNoneEvent() const {return events_ == kNoneEvent;}
 
-    void enableReading() {events_ |= kReadEvent; update();};
+    void enableReading() {events_ |= kReadEvent; update();}
+    void disableAll() {events_ = kNoneEvent; update(); }
 
     int index() {return index_;};
     void setIndex(int idx) { index_ = idx; };
+
+    void remove();
 
     EventLoop* ownerLoop() {return loop_;}; 
 

@@ -26,10 +26,17 @@ void Channel::update()
     loop_->updateChannel(this);
 }
 
+void Channel::remove()
+{
+    assert(events_ == kNoneEvent);
+    loop_->removeChannel(this);
+}
+
 void Channel::handleEvent()
 {
     if (revents_ & POLLNVAL) {  // 非法请求
         std::cout<<"channel::handle event() POLLNVAL"<<std::endl;
+        loop_->quit();
     }
     if (revents_ & (POLLERR | POLLNVAL)) {  // 错误
         if (errorCallBack_) errorCallBack_();

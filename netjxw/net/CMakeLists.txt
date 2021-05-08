@@ -6,6 +6,10 @@ set(APP_SRC
     eventloop.cpp
     channel.cpp
     poller.cpp
+    eventloopthread.cpp
+    inetaddress.cpp
+    acceptor.cpp
+    Socket.cpp
     )
 
 add_library(net ${APP_SRC})

@@ -1,5 +1,18 @@
 include_directories(${PROJECT_SOURCE_DIR}/netjxw)
-add_executable(EventLoop_test EventLoop_unittest.cpp)
-target_link_libraries(EventLoop_test net)
-target_link_libraries(EventLoop_test ${CMAKE_THREAD_LIBS_INIT})
+add_executable(eventloop_test eventloop_test.cpp)
+target_link_libraries(eventloop_test net)
+target_link_libraries(eventloop_test ${CMAKE_THREAD_LIBS_INIT})
 
+add_executable(eventloop_test2 eventloop_test2.cpp)
+target_link_libraries(eventloop_test2 net)
+target_link_libraries(eventloop_test2 ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(eventloopthread_test eventloopthread_test.cpp)
+target_link_libraries(eventloopthread_test net)
+target_link_libraries(eventloopthread_test ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(inetaddress_test inetaddress_test.cpp)
+target_link_libraries(inetaddress_test net)
+
+add_executable(acceptor_test acceptor_test.cpp)
+target_link_libraries(acceptor_test net)

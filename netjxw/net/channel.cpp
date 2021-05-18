@@ -21,6 +21,11 @@ Channel::Channel(EventLoop* loop, int fdarg)
 {
 }
 
+Channel::~Channel()
+{
+    assert(!eventHandling);
+}
+
 void Channel::update()
 {
     loop_->updateChannel(this);
@@ -34,9 +39,13 @@ void Channel::remove()
 
 void Channel::handleEvent()
 {
+    eventHandling = true;
     if (revents_ & POLLNVAL) {  // 非法请求
         std::cout<<"channel::handle event() POLLNVAL"<<std::endl;
         loop_->quit();
+    }
+    if ((revents_ & POLLHUP) && !(revents_ & POLLIN)) {
+        if (closeCallBack_) closeCallBack_();
     }
     if (revents_ & (POLLERR | POLLNVAL)) {  // 错误
         if (errorCallBack_) errorCallBack_();
@@ -47,4 +56,5 @@ void Channel::handleEvent()
     if (revents_ & POLLOUT) {   // 可写
         if (writeCallBack_) writeCallBack_();
     }
+    eventHandling = false;
 }

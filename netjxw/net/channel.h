@@ -17,11 +17,13 @@ public:
     typedef std::function<void()> EventCallBack;
 
     Channel(EventLoop* loop, int fdarg);
+    ~Channel();
 
     void handleEvent();     // 处理事件
     void setReadCallBack(const EventCallBack& cb) {readCallBack_ = cb;}
     void setWriteCallBack(const EventCallBack& cb) {writeCallBack_ = cb;}
     void setErrorCallBack(const EventCallBack& cb) {errorCallBack_ = cb;}
+    void setCloseCallBack(const EventCallBack& cb) {closeCallBack_ = cb;}
 
     int fd() const {return fd_;}
     int events() const {return events_;}
@@ -51,9 +53,12 @@ private:
     int revents_;   // 目前活动的事件，由eventloop/poller设置. bit pattern
     int index_;     // 在poller中pollfds_的index.
 
+    bool eventHandling;
+
     EventCallBack readCallBack_;
     EventCallBack writeCallBack_;
     EventCallBack errorCallBack_;
+    EventCallBack closeCallBack_;
 };
 
 

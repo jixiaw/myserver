@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 
+#include "net/common.h"
 #include "base/noncopyable.h"
 #include "net/inetaddress.h"
 #include "net/tcpconnection.h"
@@ -22,17 +23,19 @@ class TcpConnection;
 class TcpServer : noncopyable
 {
 public:
-    typedef std::function<void()> ConnectionCallback;
-    typedef std::function<void()> MessageCallback;
     TcpServer(EventLoop* loop, const InetAddress& listenAddr, const std::string& name);
     ~TcpServer();
 
     void start();  // 开启监听
     void setConnectionCallback(const ConnectionCallback& cb) {connectionCallback_ = cb;};
     void setMessageCallback(const MessageCallback& cb) {messageCallback_ = cb;};
+    void setCloseCallback(const CloseCallback& cb) {closeCallback_ = cb;}
 
 private:
+    // Acceptor accept 连接时回调这个函数建立连接
     void newConnection(int sockfd, const InetAddress& peerAddr);
+    // TcpConnection 关闭连接时回调这个函数删除连接
+    void removeConnection(const TcpConnectionPtr& conn);
 
     typedef std::map<std::string, TcpConnectionPtr> ConnectionMap;
 private:
@@ -41,8 +44,9 @@ private:
     EventLoop* loop_;
     const std::string name_;
     std::unique_ptr<Acceptor> acceptorPtr;
-    ConnectionCallback connectionCallback_;
-    MessageCallback messageCallback_;
+    ConnectionCallback connectionCallback_;  // 连接建立和断开时会调用，TcpConnection::connectEstablish和connectDestory
+    MessageCallback messageCallback_;  // TcpConnection::handleRead调用
+    CloseCallback closeCallback_;  // 断开连接时调用， TcpConnection::handleClose里
     bool start_;
     int nextConnId_;
     ConnectionMap connectionMap_;

@@ -16,3 +16,6 @@ target_link_libraries(inetaddress_test net)
 
 add_executable(acceptor_test acceptor_test.cpp)
 target_link_libraries(acceptor_test net)
+
+add_executable(tcpserver_test tcpserver_test.cpp)
+target_link_libraries(tcpserver_test net)

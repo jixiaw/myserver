@@ -10,6 +10,9 @@ set(APP_SRC
     inetaddress.cpp
     acceptor.cpp
     Socket.cpp
+    tcpserver.cpp
+    tcpconnection.cpp
+    common.h
     )
 
 add_library(net ${APP_SRC})

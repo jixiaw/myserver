@@ -3,6 +3,7 @@
 #include <sys/eventfd.h>
 #include "poller.h"
 #include "channel.h"
+#include "net/timerqueue.h"
 #include <unistd.h>
 using namespace server::net;
 
@@ -15,7 +16,8 @@ EventLoop::EventLoop()
       callingPendingFunctors_(false),
       wakeupFd_(createEventfd()),
       wakeupChannel_(new Channel(this, wakeupFd_)),
-      poller_(new Poller(this))
+      poller_(new Poller(this)),
+      timerQueue_(new TimerQueue(this))
 {
     if (t_loopInThisThread) {
         std::cout<<"EventLoop already exists. "<<std::endl;
@@ -141,4 +143,19 @@ void EventLoop::doPendingFunctors()  // 里面的functors可能会调用queueInL
         functors[i]();
     }
     callingPendingFunctors_ = false;
+}
+
+void EventLoop::runAt(const TimeStamp& time, const TimerCallback& cb)
+{
+    timerQueue_->addTimer(cb, time, 0.0);
+}
+void EventLoop::runAfter(double delay, const TimerCallback& cb)
+{
+    TimeStamp time(addTime(TimeStamp::now(), delay));
+    timerQueue_->addTimer(cb, time, 0.0);
+}
+void EventLoop::runEvery(double interval, const TimerCallback& cb)
+{
+    TimeStamp time(addTime(TimeStamp::now(), interval));
+    timerQueue_->addTimer(cb, time, interval);
 }

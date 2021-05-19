@@ -19,3 +19,6 @@ target_link_libraries(acceptor_test net)
 
 add_executable(tcpserver_test tcpserver_test.cpp)
 target_link_libraries(tcpserver_test net)
+
+add_executable(timer_test timer_test.cpp)
+target_link_libraries(timer_test net)

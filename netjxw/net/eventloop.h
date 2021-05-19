@@ -8,6 +8,9 @@
 #include <vector>
 #include <functional>
 #include <mutex>
+#include "base/timestamp.h"
+#include "net/common.h"
+using namespace server::base;
 
 namespace server
 {
@@ -16,6 +19,7 @@ namespace net
 
 class Channel;
 class Poller;
+class TimerQueue;
 
 class EventLoop: server::noncopyable {
 public:
@@ -42,6 +46,10 @@ public:
     void queueInLoop(const Functor& cb);
     void wakeup();
 
+    void runAt(const TimeStamp& time, const TimerCallback& cb);
+    void runAfter(double delay, const TimerCallback& cb);
+    void runEvery(double interval, const TimerCallback& cb);
+
 private:
     void abortNotInLoopThread() { std::cout<<"error, not in loop thread"<<std::endl; }
     void handleRead();
@@ -58,8 +66,9 @@ private:
     std::unique_ptr<Channel> wakeupChannel_;
     std::unique_ptr<Poller> poller_;
     ChannelList activeChannels_;
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     std::vector<Functor> pendingFunctors_;
+    std::unique_ptr<TimerQueue> timerQueue_;
 
 };
 

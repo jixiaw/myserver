@@ -9,6 +9,8 @@ namespace net
 {
 class TcpConnection;
 
+typedef std::function<void()> TimerCallback;
+
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 // 连接建立后回调函数
 typedef std::function<void(const TcpConnectionPtr&)> ConnectionCallback;

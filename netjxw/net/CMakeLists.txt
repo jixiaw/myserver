@@ -13,6 +13,8 @@ set(APP_SRC
     tcpserver.cpp
     tcpconnection.cpp
     common.h
+    timer.cpp
+    timerqueue.cpp
     )
 
 add_library(net ${APP_SRC})

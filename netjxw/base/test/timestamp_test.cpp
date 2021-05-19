@@ -11,6 +11,8 @@ int main(){
 
     TimeStamp ts2 = TimeStamp::now();
     assert(ts < ts2);
+    TimeStamp a = addTime(ts, 10);
+    std::cout<<a.toFormatString()<<std::endl;
 
 
     return 0;

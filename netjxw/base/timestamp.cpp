@@ -41,3 +41,4 @@ std::string TimeStamp::toString()
     snprintf(buf, sizeof buf, "%d.%06d", seconds, microseconds);
     return buf;
 }
+

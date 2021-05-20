@@ -3,6 +3,7 @@
 
 #include "base/noncopyable.h"
 #include <functional>
+// using namespace server::base;
 namespace server {
 namespace net {
 
@@ -15,6 +16,7 @@ class Channel : public noncopyable
 {
 public:
     typedef std::function<void()> EventCallBack;
+    // typedef std::function<void(TimeStamp)> ReadEventCallback;
 
     Channel(EventLoop* loop, int fdarg);
     ~Channel();

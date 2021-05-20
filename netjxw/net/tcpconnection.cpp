@@ -2,6 +2,7 @@
 #include "Socket.h"
 #include "channel.h"
 #include "eventloop.h"
+#include "buffer.h"
 #include <memory>
 #include <unistd.h>
 
@@ -50,12 +51,14 @@ void TcpConnection::connectDestroyed()
 void TcpConnection::handleRead()
 {
     char buf[4096];
-    ssize_t n = ::read(channel_->fd(), buf, sizeof buf);
+    // ssize_t n = ::read(channel_->fd(), buf, sizeof buf);
+    ssize_t n = inputBuffer_.readFd(channel_->fd());
     if (n > 0){
-        messageCallback_(shared_from_this(), buf, n);
+        messageCallback_(shared_from_this(), &inputBuffer_);
     } else if (n == 0) {
         handleClose();
     } else {
+        printf("ERROR in TcpConnection::handleRead().\n");
         handleError();
     }
 

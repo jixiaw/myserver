@@ -1,6 +1,6 @@
 #include "tcpserver.h"
 #include "acceptor.h"
-
+#include "buffer.h"
 using namespace server::net;
 
 void server::net::defaultConnectionCallback(const TcpConnectionPtr& conn)
@@ -15,10 +15,11 @@ void server::net::defaultConnectionCallback(const TcpConnectionPtr& conn)
     }
 }
 
-void server::net::defaultMessageCallback(const TcpConnectionPtr& conn, const char* buf, ssize_t n)
+void server::net::defaultMessageCallback(const TcpConnectionPtr& conn, Buffer* buffer)
 {
     printf("defaultMessageCallback(): received %zd bytes from connection [%s]\n",
-            n, conn->getName().c_str());
+            buffer->readableBytes(), conn->getName().c_str());
+    printf("defaultMessageCallback(): [%s]\n", buffer->retrieveAll().c_str());
 }
 
 void server::net::defaultCloseCallback(const TcpConnectionPtr& conn)

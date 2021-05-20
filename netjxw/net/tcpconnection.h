@@ -9,6 +9,7 @@
 #include "base/noncopyable.h"
 #include "net/inetaddress.h"
 #include "net/common.h"
+#include "net/buffer.h"
 namespace server {
 namespace net {
 
@@ -16,6 +17,7 @@ class EventLoop;
 class Channel;
 class Acceptor;
 class Socket;
+
 class TcpConnection : noncopyable,
                       public std::enable_shared_from_this<TcpConnection> {
 public:
@@ -55,6 +57,7 @@ private:
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
     CloseCallback closeCallback_;
+    Buffer inputBuffer_;
     
 };
 

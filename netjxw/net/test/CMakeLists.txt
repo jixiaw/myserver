@@ -22,3 +22,6 @@ target_link_libraries(tcpserver_test net)
 
 add_executable(timer_test timer_test.cpp)
 target_link_libraries(timer_test net)
+
+add_executable(buffer_test buffer_test.cpp)
+target_link_libraries(buffer_test net)

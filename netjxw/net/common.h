@@ -7,8 +7,8 @@ namespace server
 {
 namespace net
 {
+class Buffer;
 class TcpConnection;
-
 typedef std::function<void()> TimerCallback;
 
 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
@@ -16,14 +16,12 @@ typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 typedef std::function<void(const TcpConnectionPtr&)> ConnectionCallback;
 // 从socket读取数据后回调函数
 typedef std::function<void(const TcpConnectionPtr&, 
-                           const char*, 
-                           ssize_t)> MessageCallback;
+                            Buffer* buffer)> MessageCallback;
 typedef std::function<void(const TcpConnectionPtr&)> CloseCallback;
 
 void defaultConnectionCallback(const TcpConnectionPtr&);
 void defaultMessageCallback(const TcpConnectionPtr&, 
-                            const char*, 
-                            ssize_t);
+                            Buffer* buffer);
 void defaultCloseCallback(const TcpConnectionPtr&);
 
 }

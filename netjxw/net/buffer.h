@@ -35,8 +35,10 @@ public:
     void append(const char* str, size_t len);
     void makeSpace(size_t len);
 
-    std::string retrieveAll();
-    std::string retrieve(size_t len);
+    std::string retrieveAllString();
+    std::string retrieveString(size_t len);
+    void retrieveAll();
+    void retrieve(size_t len);
 
 private:
     std::vector<char> buffer_;

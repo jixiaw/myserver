@@ -38,14 +38,20 @@ public:
     const InetAddress& getPeerAddr() { return peerAddr_; }
     bool connected() {return state_ == kConnected;}
 
+    void send(const std::string& message);
+    void shutdown();
+
 private:
-    enum State {kConnecting = 0, kConnected, kDisconnected, };
+    enum State {kConnecting = 0, kConnected, kDisconnected, kDisconnecting};
 
     void setState(State s) {state_ = s;}
     void handleRead();
     void handleWrite();
     void handleClose();
     void handleError();
+
+    void sendInLoop(const std::string& message);
+    void shutdownInLoop();
 
     EventLoop* loop_;
     std::string name_;
@@ -57,8 +63,8 @@ private:
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
     CloseCallback closeCallback_;
-    Buffer inputBuffer_;
-    
+    Buffer inputBuffer_;    // 接收数据的buffer
+    Buffer outputBuffer_;   // 发送数据的buffer
 };
 
 }

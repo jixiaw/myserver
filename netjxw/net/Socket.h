@@ -22,6 +22,7 @@ public:
     void bind(const InetAddress& addr);
     void listen();
     int accept(InetAddress* addr);
+    void shutdownWrite();
 
     static int createNonblockingSocket();
 

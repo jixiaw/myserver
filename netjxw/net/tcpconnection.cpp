@@ -22,6 +22,7 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string& name, int sockfd,
   peerAddr_(peerAddr)
 {
     channel_->setReadCallBack(std::bind(&TcpConnection::handleRead, this));
+    channel_->setWriteCallBack(std::bind(&TcpConnection::handleWrite, this));
 }
 
 TcpConnection::~TcpConnection()
@@ -65,8 +66,22 @@ void TcpConnection::handleRead()
 }
 void TcpConnection::handleWrite()
 {
-
+    loop_->assertInLoopThread();
+    if (channel_->isWriting()){
+        ssize_t n = ::write(channel_->fd(), 
+                    outputBuffer_.peek(), outputBuffer_.readableBytes());
+        if (n > 0) {
+            outputBuffer_.retrieve(n);
+            if (outputBuffer_.readableBytes() == 0) {
+                channel_->disableWriting();
+                if (state_ == kDisconnecting) {
+                    shutdownInLoop();
+                }
+            }
+        }
+    }
 }
+
 void TcpConnection::handleClose()
 {
     loop_->assertInLoopThread();
@@ -78,4 +93,56 @@ void TcpConnection::handleClose()
 void TcpConnection::handleError()
 {
     printf("TcpConnection::handleError.\n");
+}
+
+void TcpConnection::shutdown()
+{
+    if (state_ == kConnected) {
+        setState(kDisconnecting);
+        loop_->runInLoop(std::bind(&TcpConnection::shutdownInLoop, this));
+    }
+}
+
+void TcpConnection::shutdownInLoop()
+{
+    loop_->assertInLoopThread();
+    if (!channel_->isWriting()) {
+        socket_->shutdownWrite(); // 关闭写端
+    }
+}
+
+void TcpConnection::send(const std::string& message)
+{
+    if (state_ == kConnected) {
+        if (loop_->isInLoopThread()) {
+            sendInLoop(message);
+        } else {
+            loop_->runInLoop(
+                std::bind(&TcpConnection::sendInLoop, this, message));
+        }
+    }
+}
+
+void TcpConnection::sendInLoop(const std::string& message)
+{
+    loop_->assertInLoopThread();
+    ssize_t nwrote = 0;
+    // 如果缓冲区没有等待写的就直接写入
+    if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0) {
+        nwrote = ::write(channel_->fd(), message.data(), message.size());
+        if (nwrote >= 0) {
+            if (static_cast<size_t>(nwrote) < message.size()) {
+                printf("There is more data to write.\n");
+            }
+        } else {
+            nwrote = 0;
+            printf("Error in TcpConnection::sendInLoop.\n");
+        }
+    }
+    if (static_cast<size_t>(nwrote) < message.size()) {
+        outputBuffer_.append(message.data() + nwrote, message.size()-nwrote);
+        if (!channel_->isWriting()) {
+            channel_->enableWriting();
+        }
+    }
 }

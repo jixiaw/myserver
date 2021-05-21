@@ -19,7 +19,7 @@ void server::net::defaultMessageCallback(const TcpConnectionPtr& conn, Buffer* b
 {
     printf("defaultMessageCallback(): received %zd bytes from connection [%s]\n",
             buffer->readableBytes(), conn->getName().c_str());
-    printf("defaultMessageCallback(): [%s]\n", buffer->retrieveAll().c_str());
+    printf("defaultMessageCallback(): [%s]\n", buffer->retrieveAllString().c_str());
 }
 
 void server::net::defaultCloseCallback(const TcpConnectionPtr& conn)

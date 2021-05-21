@@ -25,3 +25,6 @@ target_link_libraries(timer_test net)
 
 add_executable(buffer_test buffer_test.cpp)
 target_link_libraries(buffer_test net)
+
+add_executable(echoserver_test echoserver_test.cpp)
+target_link_libraries(echoserver_test net)

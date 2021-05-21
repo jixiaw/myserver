@@ -10,7 +10,7 @@ int main()
 
     Buffer buffer;
     buffer.readFd(fd);
-    cout<<buffer.readableBytes()<<endl<<buffer.retrieveAll()<<endl;
+    cout<<buffer.readableBytes()<<endl<<buffer.retrieveAllString()<<endl;
     cout<<"read: "<<buffer.readableBytes()<<endl;
     cout<<"write: "<<buffer.writableBytes()<<endl;
     char str[64] = "test buffer hello 1234567890\n";

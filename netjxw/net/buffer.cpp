@@ -46,22 +46,32 @@ void Buffer::makeSpace(size_t len)
     }
 }
 
-std::string Buffer::retrieve(size_t len)
+void Buffer::retrieve(size_t len)
+{
+    readIdx_ += len;
+    if (readIdx_ >= writeIdx_) {
+        retrieveAll();
+    }
+}
+
+void Buffer::retrieveAll()
+{
+    readIdx_ = kPrepend;
+    writeIdx_ = kPrepend;
+}
+
+std::string Buffer::retrieveString(size_t len)
 {
     if (len > readableBytes()) {
-        printf("Warning Buffer::retrieve more than readableBytes.");
+        printf("Warning Buffer::retrieveString more than readableBytes.");
         len = readableBytes();
     }
     std::string result(peek(), len);
-    readIdx_ += len;
-    if (readIdx_ == writeIdx_) {
-        readIdx_ = kPrepend;
-        writeIdx_ = kPrepend;
-    }
+    retrieve(len);
     return result;
 }
 
-std::string Buffer::retrieveAll()
+std::string Buffer::retrieveAllString()
 {
-    return retrieve(readableBytes());
+    return retrieveString(readableBytes());
 }

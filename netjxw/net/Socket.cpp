@@ -50,5 +50,12 @@ int Socket::createNonblockingSocket() {
     }
     std::cout<< "socket: "<<fd<<std::endl;
     return fd;
+}
 
+void Socket::shutdownWrite()
+{
+    int rst;
+    if ((rst = ::shutdown(sockfd_, SHUT_WR)) < 0) {
+        std::cout<<"Socket::shutdownWrite error"<<std::endl;
+    }
 }

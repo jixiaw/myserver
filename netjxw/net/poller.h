@@ -21,10 +21,12 @@ public:
 
     Poller(EventLoop* loop);
     ~Poller();
-
+    // EventLoop调用poll, 返回待操作的 activeChannels
     int poll(int timeoutMs, ChannelList* activeChannels);
 
+    // EventLoop调用，用来插入或更新 channel
     void updateChannel(Channel* channel);
+    void removeChannel(Channel* channel);
 
     void assertInLoopThread() {ownerLoop_->assertInLoopThread();}
 

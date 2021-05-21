@@ -3,6 +3,7 @@
 
 #include "base/noncopyable.h"
 #include <functional>
+// using namespace server::base;
 namespace server {
 namespace net {
 
@@ -15,23 +16,32 @@ class Channel : public noncopyable
 {
 public:
     typedef std::function<void()> EventCallBack;
+    // typedef std::function<void(TimeStamp)> ReadEventCallback;
 
-    Channel(EventLoop* loop, int fd);
+    Channel(EventLoop* loop, int fdarg);
+    ~Channel();
 
     void handleEvent();     // 处理事件
     void setReadCallBack(const EventCallBack& cb) {readCallBack_ = cb;}
     void setWriteCallBack(const EventCallBack& cb) {writeCallBack_ = cb;}
     void setErrorCallBack(const EventCallBack& cb) {errorCallBack_ = cb;}
+    void setCloseCallBack(const EventCallBack& cb) {closeCallBack_ = cb;}
 
-    int fd() const {return fd_;};
-    int events() const {return events_;};
-    void setRevents(int revt) {revents_ = revt;};
-    bool isNoneEvent() const {return events_ == kNoneEvent;};
+    int fd() const {return fd_;}
+    int events() const {return events_;}
+    void setRevents(int revt) {revents_ = revt;}
+    bool isNoneEvent() const {return events_ == kNoneEvent;}
 
-    void enableReading() {events_ |= kReadEvent; update();};
+    void enableReading() {events_ |= kReadEvent; update();}
+    void enableWriting() {events_ |= kWriteEvent; update();}
+    void disableWriting() {events_ &= ~kWriteEvent; update();}
+    void disableAll() {events_ = kNoneEvent; update(); }
+    bool isWriting() const {return events_ & kWriteEvent; }
 
     int index() {return index_;};
     void setIndex(int idx) { index_ = idx; };
+
+    void remove();
 
     EventLoop* ownerLoop() {return loop_;}; 
 
@@ -48,9 +58,12 @@ private:
     int revents_;   // 目前活动的事件，由eventloop/poller设置. bit pattern
     int index_;     // 在poller中pollfds_的index.
 
+    bool eventHandling;
+
     EventCallBack readCallBack_;
     EventCallBack writeCallBack_;
     EventCallBack errorCallBack_;
+    EventCallBack closeCallBack_;
 };
 
 

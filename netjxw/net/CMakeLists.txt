@@ -6,6 +6,16 @@ set(APP_SRC
     eventloop.cpp
     channel.cpp
     poller.cpp
+    eventloopthread.cpp
+    inetaddress.cpp
+    acceptor.cpp
+    Socket.cpp
+    tcpserver.cpp
+    tcpconnection.cpp
+    common.h
+    timer.cpp
+    timerqueue.cpp
+    buffer.cpp
     )
 
 add_library(net ${APP_SRC})

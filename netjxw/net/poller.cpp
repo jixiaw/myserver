@@ -63,11 +63,36 @@ void Poller::updateChannel(Channel* channel)
         int idx = channel->index();
         assert(idx >= 0 && idx < static_cast<int>(pollfds_.size()));
         struct pollfd &pfd = pollfds_[idx];
-        assert(pfd.fd == channel->fd() || pfd.fd == -1);
+        assert(pfd.fd == channel->fd() || pfd.fd == -channel->fd()-1);
         pfd.events = static_cast<short>(channel->events());
         pfd.revents = 0;
         if (channel->isNoneEvent()) {  // 忽略这个fd
-            pfd.fd = -1;
+            pfd.fd = -channel->fd()-1;
         }
     }
+}
+
+void Poller::removeChannel(Channel* channel)
+{
+    assertInLoopThread();
+    int idx = channel->index();
+    // assert(channels_.find(channel->fd()) != channels_.end());
+    auto it = channels_.find(channel->fd());
+    assert(it != channels_.end());
+    assert(idx >= 0 && idx < static_cast<int>(pollfds_.size()));
+    channels_.erase(it);
+    if (idx < static_cast<int>(pollfds_.size())-1) {
+        // 跟最后一个交换
+        int channelEnd = pollfds_.back().fd;
+        std::swap(pollfds_[idx], pollfds_.back());
+        if (channelEnd < 0) {   // 最后一个没有事件的话
+            channelEnd = -channelEnd - 1;
+        }
+        // auto now = channels_.find(pollfds_[idx].fd);
+        // assert(now != channels_.end());
+        // now->second->setIndex(idx);
+        channels_[channelEnd]->setIndex(idx);
+    }
+    pollfds_.pop_back();
+    
 }

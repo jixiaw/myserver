@@ -5,4 +5,5 @@ target_link_libraries(util_test base)
 add_executable(timestamp_test timestamp_test.cpp)
 target_link_libraries(timestamp_test base)
 
-
+add_executable(logging_test logging_test.cpp)
+target_link_libraries(logging_test base)

@@ -3,6 +3,8 @@ set(LIB_UTIL
     timestamp.cpp
     string_util.cpp
     time_util.cpp
+    logging.cpp
+    logstream.h
     )
 
 add_library(base ${LIB_UTIL})

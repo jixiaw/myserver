@@ -5,10 +5,20 @@
 #include "channel.h"
 #include "net/timerqueue.h"
 #include <unistd.h>
+#include <signal.h>
 using namespace server::net;
 
 __thread EventLoop* t_loopInThisThread = NULL;
 const int kPollTimeMs = 10000;
+
+class IgnoreSigPipe{
+public:
+    IgnoreSigPipe() {
+        ::signal(SIGPIPE, SIG_IGN);
+    }
+};
+IgnoreSigPipe ignoreSig;
+
 EventLoop::EventLoop()
     : looping_(false),
       threadId_(std::this_thread::get_id()),

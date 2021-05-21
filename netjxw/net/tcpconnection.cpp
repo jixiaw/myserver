@@ -42,11 +42,15 @@ void TcpConnection::connectEstablish()
 void TcpConnection::connectDestroyed()
 {
     loop_->assertInLoopThread();
-    assert(state_ == kConnected);
-    setState(kDisconnected);
-    channel_->disableAll();
-    connectionCallback_(shared_from_this());
-    loop_->removeChannel(channel_.get());
+    if (state_ == kConnected) {
+        setState(kDisconnected);
+        channel_->disableAll();
+        connectionCallback_(shared_from_this());
+    }
+    // setState(kDisconnected);
+    // channel_->disableAll();
+    // connectionCallback_(shared_from_this());
+    channel_->remove();
 }
 
 void TcpConnection::handleRead()
@@ -85,7 +89,7 @@ void TcpConnection::handleWrite()
 void TcpConnection::handleClose()
 {
     loop_->assertInLoopThread();
-    assert(state_ == kConnected);
+    assert(state_ == kConnected || state_ == kDisconnecting);
     printf("TcpConnection::handleClose.\n");
     channel_->disableAll();
     closeCallback_(shared_from_this());  // 回调让TcpServer删除这个连接

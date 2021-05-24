@@ -4,6 +4,7 @@
 #include "poller.h"
 #include "channel.h"
 #include "net/timerqueue.h"
+#include "base/logging.h"
 #include <unistd.h>
 #include <signal.h>
 using namespace server::net;
@@ -30,10 +31,10 @@ EventLoop::EventLoop()
       timerQueue_(new TimerQueue(this))
 {
     if (t_loopInThisThread) {
-        std::cout<<"EventLoop already exists. "<<std::endl;
+        LOG_FATAL << "EventLoop already exists.";
     }
     else {
-        std::cout<<"EventLoop created in thread "<< threadId_<< std::endl;
+        LOG_INFO << "EventLoop created in thread.";
         t_loopInThisThread = this;
     }
     wakeupChannel_->setReadCallBack(std::bind(&EventLoop::handleRead, this));
@@ -65,7 +66,7 @@ int EventLoop::createEventfd()
     int evtfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (evtfd < 0) 
     {
-        std::cout<<"Faild in eventfd"<<std::endl;
+        LOG_ERROR << "Faild in eventfd.";
     }
     return evtfd;
 }
@@ -75,7 +76,7 @@ void EventLoop::wakeup()
     uint64_t one = 1;
     ssize_t n = ::write(wakeupFd_, &one, sizeof one);
     if (n != sizeof one){
-        std::cout<<"EventLoop::wakeup() writes " << n <<"bytes instead of 8"<<std::endl;
+        LOG_ERROR << "EventLoop::wakeup() writes " << n <<"bytes instead of 8";
     }
 }
 
@@ -84,7 +85,7 @@ void EventLoop::handleRead()
     uint64_t one = 1;
     ssize_t n = ::read(wakeupFd_, &one, sizeof one);
     if (n != sizeof one) {
-        std::cout<<"EventLoop::handleRead() reads " << n <<"bytes instead of 8"<<std::endl;
+        LOG_ERROR << "EventLoop::handleRead() reads " << n <<"bytes instead of 8";
     }
 }
 
@@ -103,7 +104,7 @@ void EventLoop::loop()
         }
         doPendingFunctors();
     }
-    std::cout<<"EventLoop stop" <<std::endl;
+    LOG_INFO << "EventLoop stop";
     looping_ = false;
 }
 
@@ -119,6 +120,11 @@ void EventLoop::quit()
 EventLoop* EventLoop::getEventLoopOfCurrentThread()
 {
     return t_loopInThisThread;
+}
+
+void EventLoop::abortNotInLoopThread() 
+{
+    LOG_FATAL << "FATAL, not in loop thread";
 }
 
 void EventLoop::runInLoop(const Functor& cb) 

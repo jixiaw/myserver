@@ -17,7 +17,7 @@ Acceptor::Acceptor(EventLoop* loop, const InetAddress& listenAddr)
 
 Acceptor::~Acceptor()
 {
-    std::cout<<"deconstruct acceptor"<<std::endl;
+    // std::cout<<"deconstruct acceptor"<<std::endl;
     acceptChannel_.disableAll();
     acceptChannel_.remove();
 }

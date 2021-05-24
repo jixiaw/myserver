@@ -51,7 +51,7 @@ public:
     void runEvery(double interval, const TimerCallback& cb);
 
 private:
-    void abortNotInLoopThread() { std::cout<<"error, not in loop thread"<<std::endl; }
+    void abortNotInLoopThread();
     void handleRead();
     void doPendingFunctors();
     int createEventfd();

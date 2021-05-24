@@ -18,6 +18,7 @@ class EventLoop;
 class Channel;
 class Acceptor;
 class TcpConnection;
+class EventLoopThreadPool;
 
 // 用户持有，一个TCP服务，包含Acceptor用来接受连接，保存当前建立的连接
 class TcpServer : noncopyable
@@ -31,11 +32,14 @@ public:
     void setMessageCallback(const MessageCallback& cb) {messageCallback_ = cb;};
     void setCloseCallback(const CloseCallback& cb) {closeCallback_ = cb;}
 
+    void setNumThread(int numThread);
+
 private:
     // Acceptor accept 连接时回调这个函数建立连接
     void newConnection(int sockfd, const InetAddress& peerAddr);
     // TcpConnection 关闭连接时回调这个函数删除连接
     void removeConnection(const TcpConnectionPtr& conn);
+    void removeConnectionInLoop(const TcpConnectionPtr& conn);
 
     typedef std::map<std::string, TcpConnectionPtr> ConnectionMap;
 private:
@@ -50,6 +54,7 @@ private:
     bool start_;
     int nextConnId_;
     ConnectionMap connectionMap_;
+    std::unique_ptr<EventLoopThreadPool> threadPool_;
 };
 
 }

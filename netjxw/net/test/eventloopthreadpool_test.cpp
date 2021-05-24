@@ -1,21 +1,18 @@
+#include "net/tcpserver.h"
 #include "net/eventloop.h"
 #include "net/inetaddress.h"
-#include "net/tcpserver.h"
-#include "net/buffer.h"
-#include <unistd.h>
-#include <signal.h>
-#include <time.h>
-#include <iostream>
 #include <string>
 using namespace server::net;
 using namespace std;
-class EchoServer{
+
+class EchoServer
+{
 public:
-    EchoServer(EventLoop* loop, const InetAddress& listenAddr)
-    : loop_(loop),
-      server_(loop, listenAddr, "echo server"),
-      sleepSeconds_(5)
+    EchoServer(EventLoop* loop, const InetAddress& listenAddr )
+    :loop_(loop),
+     server_(loop, listenAddr, "echo server thread pool") 
     {
+        server_.setNumThread(4);
         server_.setConnectionCallback(std::bind(&EchoServer::onConnection, this, std::placeholders::_1));
         server_.setMessageCallback(std::bind(&EchoServer::onMessage, this, std::placeholders::_1, std::placeholders::_2));
     }
@@ -26,7 +23,6 @@ public:
         cout<<conn->getName()<<" recv "<<msg.size()<<"bytes."<<endl;
         conn->send(msg);
     }
-
     void onConnection(const TcpConnectionPtr& conn)
     {
         if (conn->connected()){
@@ -39,28 +35,18 @@ public:
             // conn->send("hello\n");
             // conn->send("echo server\n");
             // conn->shutdown();
-            conn->setTcpNoDelay(true);
-            conn->setKeepAlive(true);
         }
     }
-
-    void start()
-    {
+    void start() {
         server_.start();
     }
-
-
 private:
     EventLoop* loop_;
     TcpServer server_;
-    int sleepSeconds_;
 };
 
 int main()
 {
-    // ::signal(SIGPIPE, SIG_IGN);
-    pid_t pid = ::getpid();
-    cout<<"pid: "<<pid<<endl;
     EventLoop loop;
     InetAddress listenaddr(1234);
     EchoServer server(&loop, listenaddr);

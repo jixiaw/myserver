@@ -2,7 +2,7 @@
 
 namespace server {
 namespace base{
-Logger::LogLevel g_logLevel = Logger::INFO;
+Logger::LogLevel g_logLevel = Logger::DEBUG;
 
 // void Logger::setLogLevel(Logger::LogLevel level)
 // {

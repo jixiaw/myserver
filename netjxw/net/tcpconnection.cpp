@@ -3,12 +3,11 @@
 #include "channel.h"
 #include "eventloop.h"
 #include "buffer.h"
+#include "base/logging.h"
 #include <memory>
 #include <unistd.h>
 
 using namespace server::net;
-
-
 
 
 TcpConnection::TcpConnection(EventLoop* loop, std::string& name, int sockfd, 
@@ -27,7 +26,7 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string& name, int sockfd,
 
 TcpConnection::~TcpConnection()
 {
-    printf("TcpConection deconstruct\n");
+    LOG_DEBUG << "TcpConection deconstruct";
 }
 
 void TcpConnection::connectEstablish()
@@ -63,7 +62,7 @@ void TcpConnection::handleRead()
     } else if (n == 0) {
         handleClose();
     } else {
-        printf("ERROR in TcpConnection::handleRead().\n");
+        LOG_ERROR << "ERROR in TcpConnection::handleRead().";
         handleError();
     }
 
@@ -90,13 +89,13 @@ void TcpConnection::handleClose()
 {
     loop_->assertInLoopThread();
     assert(state_ == kConnected || state_ == kDisconnecting);
-    printf("TcpConnection::handleClose.\n");
+    LOG_DEBUG << "TcpConnection::handleClose.";
     channel_->disableAll();
     closeCallback_(shared_from_this());  // 回调让TcpServer删除这个连接
 }
 void TcpConnection::handleError()
 {
-    printf("TcpConnection::handleError.\n");
+    LOG_INFO << "TcpConnection::handleError.";
 }
 
 void TcpConnection::shutdown()
@@ -136,11 +135,11 @@ void TcpConnection::sendInLoop(const std::string& message)
         nwrote = ::write(channel_->fd(), message.data(), message.size());
         if (nwrote >= 0) {
             if (static_cast<size_t>(nwrote) < message.size()) {
-                printf("There is more data to write.\n");
+                LOG_INFO << "TcpConnection::sendInLoop() There is more data to write.";
             }
         } else {
             nwrote = 0;
-            printf("Error in TcpConnection::sendInLoop.\n");
+            LOG_ERROR << "Error write in TcpConnection::sendInLoop.";
         }
     }
     if (static_cast<size_t>(nwrote) < message.size()) {
@@ -149,4 +148,14 @@ void TcpConnection::sendInLoop(const std::string& message)
             channel_->enableWriting();
         }
     }
+}
+
+void TcpConnection::setTcpNoDelay(bool on) 
+{
+    socket_->setTcpNoDelay(on);
+}
+
+void TcpConnection::setKeepAlive(bool on)
+{
+    socket_->setKeepAlive(on);
 }

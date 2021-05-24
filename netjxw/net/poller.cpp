@@ -1,9 +1,9 @@
 #include "poller.h"
 #include "channel.h"
 #include <iostream>
-
+#include "base/logging.h"
 using namespace server::net;
-
+using namespace server::base;
 
 Poller::Poller(EventLoop* loop)
     : ownerLoop_(loop)
@@ -18,12 +18,12 @@ int Poller::poll(int timeoutMs, ChannelList* activeChannels)
 {
     int numEvents = ::poll(&*pollfds_.begin(), pollfds_.size(), timeoutMs);
     if (numEvents > 0) {
-        std::cout<<numEvents<<" events happended"<<std::endl;
+        LOG_INFO << "Pollor:poll() " << numEvents << " events happended";
         fillActiveChannels(numEvents, activeChannels);
     } else if (numEvents == 0) {
-        std::cout<<" nothing happended"<<std::endl;
+        LOG_INFO << "Pollor:poll() nothing happended";
     } else {
-        std::cout<<"error pollor::poll()"<<std::endl;
+        LOG_ERROR << "Pollor:poll() error";
     }
     return numEvents;
 }

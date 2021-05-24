@@ -1,5 +1,6 @@
 #include "channel.h"
 #include "eventloop.h"
+#include "base/logging.h"
 #include <poll.h>
 
 #include <iostream>
@@ -41,7 +42,7 @@ void Channel::handleEvent()
 {
     eventHandling = true;
     if (revents_ & POLLNVAL) {  // 非法请求
-        std::cout<<"channel::handle event() POLLNVAL"<<std::endl;
+        LOG_ERROR << "Channel::handleEvent() event POLLNVAL";
         loop_->quit();
     }
     if ((revents_ & POLLHUP) && !(revents_ & POLLIN)) {

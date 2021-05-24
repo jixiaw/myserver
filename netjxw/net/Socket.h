@@ -24,6 +24,9 @@ public:
     int accept(InetAddress* addr);
     void shutdownWrite();
 
+    void setTcpNoDelay(bool on);
+    void setKeepAlive(bool on);
+
     static int createNonblockingSocket();
 
 private:

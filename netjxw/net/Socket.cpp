@@ -72,3 +72,25 @@ void Socket::setKeepAlive(bool on)
     int opt = on ? 1 : 0;
     ::setsockopt(sockfd_, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof opt);
 }
+
+struct sockaddr_in Socket::getLocalAddr(int sockfd)
+{
+    struct sockaddr_in localaddr;
+    bzero(&localaddr, sizeof localaddr);
+    socklen_t addrlen = static_cast<socklen_t>(sizeof localaddr);
+    if (::getsockname(sockfd, (struct sockaddr*)(&localaddr), &addrlen) < 0) {
+        LOG_ERROR << "Socket::getLocalAddr";
+    }
+    return localaddr;
+}
+
+struct sockaddr_in Socket::getPeerAddr(int sockfd)
+{
+    struct sockaddr_in peeraddr;
+    bzero(&peeraddr, sizeof peeraddr);
+    socklen_t addrlen = static_cast<socklen_t>(sizeof peeraddr);
+    if (::getpeername(sockfd, (struct sockaddr*)(&peeraddr), &addrlen) < 0) {
+        LOG_ERROR << "Socket::getPeerAddr";
+    }
+    return peeraddr;
+}

@@ -28,7 +28,8 @@ public:
     void setKeepAlive(bool on);
 
     static int createNonblockingSocket();
-
+    static struct sockaddr_in Socket::getLocalAddr(int sockfd);
+    static struct sockaddr_in Socket::getPeerAddr(int sockfd);
 private:
     int sockfd_;
 };

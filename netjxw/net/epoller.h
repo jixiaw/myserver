@@ -6,7 +6,7 @@
 #include "eventloop.h"
 #include <sys/epoll.h>
 
-struct pollfd;
+struct epoll_event;
 
 namespace server {
 namespace net {
@@ -31,14 +31,16 @@ public:
     void assertInLoopThread() {ownerLoop_->assertInLoopThread();}
 
 private:
+    const static int kInitNumEvents = 16;
     //　遍历 pollfds_, 找出所有活动的fd, 添加进activeChannels
     void fillActiveChannels(int numEvents, ChannelList* activeChannels);
     typedef std::vector<struct epoll_event> EpollFdList;
-    // typedef std::map<int, Channel*> ChannelMap;
+    typedef std::map<int, Channel*> ChannelMap;
+
     EventLoop* ownerLoop_;
     int epollfd_;
     EpollFdList events_;    
-    // ChannelMap channels_;   //　fd 到channel的映射
+    ChannelMap channelMap_;   //　fd 到channel的映射
 };
 
 }

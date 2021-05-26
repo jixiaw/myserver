@@ -20,6 +20,7 @@ namespace net
 class Channel;
 class Poller;
 class TimerQueue;
+class Epoller;
 
 class EventLoop: server::noncopyable {
 public:
@@ -64,6 +65,7 @@ private:
     bool callingPendingFunctors_;
     int wakeupFd_;
     std::unique_ptr<Channel> wakeupChannel_;
+    // std::unique_ptr<Epoller> poller_;
     std::unique_ptr<Poller> poller_;
     ChannelList activeChannels_;
     mutable std::mutex mutex_;

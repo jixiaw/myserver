@@ -18,6 +18,8 @@ set(APP_SRC
     buffer.cpp
     eventloopthreadpool.cpp
     epoller.cpp
+    connector.cpp
+    tcpclient.cpp
     )
 
 add_library(net ${APP_SRC})

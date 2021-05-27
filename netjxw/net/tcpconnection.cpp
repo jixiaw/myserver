@@ -171,6 +171,8 @@ void TcpConnection::sendInLoop(const std::string& message)
         if (!channel_->isWriting()) {
             channel_->enableWriting();
         }
+    } else {
+        LOG_DEBUG << "TcpConnection::sendInLoop() send all completely.";
     }
 }
 

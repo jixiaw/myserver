@@ -47,6 +47,7 @@ void Poller::fillActiveChannels(int numEvents, ChannelList* activeChannels)
 void Poller::updateChannel(Channel* channel)
 {
     assertInLoopThread();
+    LOG_DEBUG << "Poller::updateChannel fd = " << channel->fd() << " events = " << channel->events();
     if (channel->index() < 0) {  // 不存在这个channel
         assert(channels_.find(channel->fd()) == channels_.end());
         struct pollfd pfd;
@@ -66,7 +67,7 @@ void Poller::updateChannel(Channel* channel)
         assert(pfd.fd == channel->fd() || pfd.fd == -channel->fd()-1);
         pfd.events = static_cast<short>(channel->events());
         pfd.revents = 0;
-        if (channel->isNoneEvent()) {  // 忽略这个fd
+        if (channel->isNoneEvent()) {  // 没有要监听的事件就将fd变成负数
             pfd.fd = -channel->fd()-1;
         }
     }

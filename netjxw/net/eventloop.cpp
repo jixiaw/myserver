@@ -38,6 +38,7 @@ EventLoop::EventLoop()
         LOG_INFO << "EventLoop created in thread.";
         t_loopInThisThread = this;
     }
+    LOG_DEBUG << "EventLoop::EventLoop() wakeup eventfd: " << wakeupFd_;
     wakeupChannel_->setReadCallBack(std::bind(&EventLoop::handleRead, this));
     wakeupChannel_->enableReading();
 }

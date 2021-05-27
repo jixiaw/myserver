@@ -2,12 +2,14 @@
 #define SERVER_NET_EPOLLER_H
 
 #include "base/noncopyable.h"
-#include <functional>
 #include "inetaddress.h"
+#include <functional>
+#include <memory>
 namespace server {
 namespace net {
 class EventLoop;
 class InetAddress;
+class Channel;
 class Connector 
 {
 public:

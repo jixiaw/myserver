@@ -53,7 +53,7 @@ private:
     CloseCallback closeCallback_;  // 断开连接时调用， TcpConnection::handleClose里
     bool connect_;
     TcpConnectionPtr connection_;
-    int nextConnId;
+    int nextConnId_;
 };
 
 }

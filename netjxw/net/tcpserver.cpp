@@ -45,7 +45,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peeraddr)
 {
     loop_->assertInLoopThread();
     char buf[32];
-    snprintf(buf, sizeof buf, "#%d", nextConnId_);
+    snprintf(buf, sizeof buf, ":%s#%d", peeraddr.toString().c_str(), nextConnId_);
     ++nextConnId_;
     std::string connName = name_ + buf;
     LOG_INFO << "TcpServer::newConnection [" << name_ <<"] new connection [" << connName

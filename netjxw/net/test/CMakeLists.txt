@@ -35,3 +35,7 @@ target_link_libraries(echoserver_test ${CMAKE_THREAD_LIBS_INIT})
 add_executable(eventloopthreadpool_test eventloopthreadpool_test.cpp)
 target_link_libraries(eventloopthreadpool_test net)
 target_link_libraries(eventloopthreadpool_test ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(tcpclient_test tcpclient_test.cpp)
+target_link_libraries(tcpclient_test net)
+target_link_libraries(tcpclient_test ${CMAKE_THREAD_LIBS_INIT})

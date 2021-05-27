@@ -16,14 +16,14 @@ TcpClient::TcpClient(EventLoop* loop,
   connectionCallback_(defaultConnectionCallback),
   messageCallback_(defaultMessageCallback),
   closeCallback_(defaultCloseCallback),
-  nextConnId(0)
+  nextConnId_(0)
 {
     connector_->setNewConnectionCallback(
         std::bind(&TcpClient::newConnection, this, std::placeholders::_1));
 }
 TcpClient::~TcpClient()
 {
-  
+    
 }
 
 void TcpClient::connect()
@@ -49,7 +49,7 @@ void TcpClient::stop()
 void TcpClient::newConnection(int sockfd)
 {
     loop_->assertInLoopThread();
-    InetAddress peerAddr = Socket::getPeerAddr(sockfd);
+    InetAddress peerAddr(Socket::getPeerAddr(sockfd));
     char buf[32];
     snprintf(buf, sizeof buf, ":%s#%d", peerAddr.toString().c_str(), nextConnId_);
     ++nextConnId_;
@@ -59,7 +59,10 @@ void TcpClient::newConnection(int sockfd)
         loop_, connName, sockfd, localAddr, peerAddr));
     conn->setConnectionCallback(connectionCallback_);
     conn->setMessageCallback(messageCallback_);
-    conn->setCloseCallback(std::bind(&TcpClinet::removeConnection, this, std::placeholders::_1));
+    conn->setCloseCallback(std::bind(&TcpClient::removeConnection, this, std::placeholders::_1));
+    // unsafe
+    connection_ = conn;
+
     conn->connectEstablish();
 }
 

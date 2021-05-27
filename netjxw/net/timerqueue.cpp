@@ -13,6 +13,7 @@ TimerQueue::TimerQueue(EventLoop* loop)
   timerfd_(createTimerfd()),
   timerChannel_(loop, timerfd_)
 {
+    LOG_DEBUG << "TimerQueue::TimerQueue() timerfd: " << timerfd_;
     timerChannel_.setReadCallBack(std::bind(&TimerQueue::handleRead, this));
     timerChannel_.enableReading();
 }

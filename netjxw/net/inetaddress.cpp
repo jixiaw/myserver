@@ -1,6 +1,7 @@
 #include "inetaddress.h"
 #include <string.h>
-#include "arpa/inet.h"
+#include <arpa/inet.h>
+#include "base/logging.h"
 #include <iostream>
 using namespace server::net;
 
@@ -23,7 +24,7 @@ InetAddress::InetAddress(const std::string& ip, uint16_t port)
     addr_.sin_family = AF_INET;
     addr_.sin_port = htons(port);
     if (::inet_pton(AF_INET, ip.c_str(), &addr_.sin_addr) <= 0) {
-        std::cout<<"error from stringip to ip"<<std::endl;
+        LOG_ERROR << "InetAddress::INerAddress() error from stringip to ip";
     }
 }
 

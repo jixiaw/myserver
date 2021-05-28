@@ -36,10 +36,13 @@ public:
 
     std::string getName(){ return name_; }
     const InetAddress& getPeerAddr() { return peerAddr_; }
+    EventLoop* getLoop() { return loop_; }
     bool connected() {return state_ == kConnected;}
 
     void send(const std::string& message);
     void shutdown();
+    void setTcpNoDelay(bool on);
+    void setKeepAlive(bool on);
 
 private:
     enum State {kConnecting = 0, kConnected, kDisconnected, kDisconnecting};

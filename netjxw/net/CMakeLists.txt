@@ -16,6 +16,10 @@ set(APP_SRC
     timer.cpp
     timerqueue.cpp
     buffer.cpp
+    eventloopthreadpool.cpp
+    epoller.cpp
+    connector.cpp
+    tcpclient.cpp
     )
 
 add_library(net ${APP_SRC})

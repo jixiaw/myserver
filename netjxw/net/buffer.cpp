@@ -1,8 +1,10 @@
 #include "buffer.h"
+#include "base/logging.h"
 #include <unistd.h>
 #include <sys/uio.h>
 
 using namespace server::net;
+using namespace server::base;
 
 ssize_t Buffer::readFd(int fd)
 {
@@ -16,7 +18,7 @@ ssize_t Buffer::readFd(int fd)
     vec[1].iov_len = sizeof buf;
     ssize_t n = ::readv(fd, vec, 2);
     if (n < 0) {
-        printf("ERROR Buffer::readFd().\n");
+        LOG_ERROR << "Buffer::readFd().";
     } else if (static_cast<size_t>(n) <= writable) {
         writeIdx_ += n;
     } else {
@@ -63,7 +65,8 @@ void Buffer::retrieveAll()
 std::string Buffer::retrieveString(size_t len)
 {
     if (len > readableBytes()) {
-        printf("Warning Buffer::retrieveString more than readableBytes.");
+        LOG_WARN << "Buffer::retrieveString len[" << len
+                 << "] more than readableBytes[" << readableBytes() <<"].";
         len = readableBytes();
     }
     std::string result(peek(), len);

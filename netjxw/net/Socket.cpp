@@ -1,8 +1,10 @@
 #include "Socket.h"
+#include "base/logging.h"
 #include <unistd.h>
 #include <sys/socket.h>
 #include <iostream>
 #include <string.h>
+#include <netinet/tcp.h>
 using namespace server::net;
 
 Socket::~Socket()
@@ -15,7 +17,6 @@ int Socket::accept(InetAddress* addr)
     struct sockaddr_in sockaddr;
     bzero(&sockaddr, sizeof sockaddr);
     socklen_t addrlen = sizeof(sockaddr);
-    std::cout<<"addrlen: "<<addrlen<<std::endl;
     int connfd = ::accept(sockfd_, (struct sockaddr*)&sockaddr, &addrlen);
     if (connfd >= 0) {
         addr->setSockAddr(sockaddr);
@@ -28,9 +29,9 @@ void Socket::listen()
     int ret;
     ret = ::listen(sockfd_, 5);
     if (0 != ret) {
-        std::cout<<"Socket listen: ."<<ret<<std::endl;
+        LOG_ERROR << "Socket::listen() error: " << ret;
     }
-    std::cout<<"start listenning"<<std::endl;
+    LOG_INFO << "Socket::listen() start listenning";
 }
 
 void Socket::bind(const InetAddress& addr)
@@ -39,16 +40,16 @@ void Socket::bind(const InetAddress& addr)
                     sizeof(struct sockaddr));
     if (ret < 0)
     {
-        std::cout<<"Error bind socket: "<<ret<<std::endl;
+        LOG_ERROR << "Socket::bind() Error bind socket: "<< ret;
     }
 }
 
 int Socket::createNonblockingSocket() {
     int fd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
     if (fd <= 0) {
-        std::cout<<"Create nonblock socket Error."<<std::endl;
+        LOG_ERROR << "Socket::createNonblockingSocket() Create nonblock socket Error.";
     }
-    std::cout<< "socket: "<<fd<<std::endl;
+    LOG_INFO << "Socket::createNonblockingSocket() create socket: " << fd;
     return fd;
 }
 
@@ -56,6 +57,40 @@ void Socket::shutdownWrite()
 {
     int rst;
     if ((rst = ::shutdown(sockfd_, SHUT_WR)) < 0) {
-        std::cout<<"Socket::shutdownWrite error"<<std::endl;
+        LOG_ERROR << "Socket::shutdownWrite error";
     }
+}
+
+void Socket::setTcpNoDelay(bool on)
+{
+    int opt = on ? 1 : 0;
+    ::setsockopt(sockfd_, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof opt);
+}
+
+void Socket::setKeepAlive(bool on)
+{
+    int opt = on ? 1 : 0;
+    ::setsockopt(sockfd_, SOL_SOCKET, SO_KEEPALIVE, &opt, sizeof opt);
+}
+
+struct sockaddr_in Socket::getLocalAddr(int sockfd)
+{
+    struct sockaddr_in localaddr;
+    bzero(&localaddr, sizeof localaddr);
+    socklen_t addrlen = static_cast<socklen_t>(sizeof localaddr);
+    if (::getsockname(sockfd, (struct sockaddr*)(&localaddr), &addrlen) < 0) {
+        LOG_ERROR << "Socket::getLocalAddr";
+    }
+    return localaddr;
+}
+
+struct sockaddr_in Socket::getPeerAddr(int sockfd)
+{
+    struct sockaddr_in peeraddr;
+    bzero(&peeraddr, sizeof peeraddr);
+    socklen_t addrlen = static_cast<socklen_t>(sizeof peeraddr);
+    if (::getpeername(sockfd, (struct sockaddr*)(&peeraddr), &addrlen) < 0) {
+        LOG_ERROR << "Socket::getPeerAddr";
+    }
+    return peeraddr;
 }

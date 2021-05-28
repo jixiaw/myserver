@@ -2,8 +2,9 @@
 
 using namespace server::net;
 
-EventLoopThread::EventLoopThread()
+EventLoopThread::EventLoopThread(const std::string& name)
 : loop_(NULL),
+  name_(name),
   thread_(std::bind(&EventLoopThread::threadFunc, this))
 {
 }

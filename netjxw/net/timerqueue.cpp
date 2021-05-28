@@ -2,6 +2,7 @@
 #include "timer.h"
 #include "channel.h"
 #include "eventloop.h"
+#include "base/logging.h"
 #include <sys/timerfd.h>
 #include <string.h>
 #include <unistd.h>
@@ -12,6 +13,7 @@ TimerQueue::TimerQueue(EventLoop* loop)
   timerfd_(createTimerfd()),
   timerChannel_(loop, timerfd_)
 {
+    LOG_DEBUG << "TimerQueue::TimerQueue() timerfd: " << timerfd_;
     timerChannel_.setReadCallBack(std::bind(&TimerQueue::handleRead, this));
     timerChannel_.enableReading();
 }
@@ -34,7 +36,7 @@ int TimerQueue::createTimerfd()
     int timerfd = ::timerfd_create(CLOCK_MONOTONIC,
                                  TFD_NONBLOCK | TFD_CLOEXEC);
     if (timerfd < 0) {
-        printf("Failed in timerfd_create.\n");
+        LOG_ERROR << "Failed in timerfd_create.";
     }
     return timerfd;
 }
@@ -42,10 +44,10 @@ void TimerQueue::readTimerfd(int timerfd, TimeStamp now)
 {
     uint64_t howmany;
     ssize_t n = ::read(timerfd, &howmany, sizeof howmany);
-    printf("TimerQueue::handleRead() %d at %s.\n", howmany, now.toString().c_str());
+    LOG_INFO << "TimerQueue::handleRead() " << howmany << " at " << now.toString();
     if (n != sizeof howmany)
     {
-        printf("TimerQueue::handleRead() reads %d bytes instead of 8\n", n);
+        LOG_ERROR << "TimerQueue::handleRead() reads " << n << " bytes instead of 8.";
     }
 }
 void TimerQueue::addTimerInLoop(const std::shared_ptr<Timer>& timer)
@@ -82,7 +84,7 @@ void TimerQueue::resetTimerfd(int timerfd, TimeStamp expiration)
     int ret = ::timerfd_settime(timerfd, 0, &newValue, &oldValue);
     if (ret)
     {
-        printf("timerfd_settime()\n");
+        LOG_DEBUG << "TimerQueue::resetTimerfd()";
     }
 }
 
@@ -95,7 +97,8 @@ bool TimerQueue::insert(const Timerptr& timer)
         isearliest = true;
     }
     timerMap.insert({timer->expiration(), timer});
-    printf("insert %s, number: %d\n", timer->expiration().toFormatString().c_str(), timerMap.size());
+    LOG_INFO << "insert [" << timer->expiration().toFormatString() 
+             <<"], number: " << timerMap.size();
     return isearliest;
 }
 

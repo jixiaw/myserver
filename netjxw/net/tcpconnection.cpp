@@ -3,13 +3,36 @@
 #include "channel.h"
 #include "eventloop.h"
 #include "buffer.h"
+#include "base/logging.h"
 #include <memory>
 #include <unistd.h>
 
 using namespace server::net;
 
+void server::net::defaultConnectionCallback(const TcpConnectionPtr& conn)
+{
+    if (conn->connected()) {
+        printf("defaultConnectionCallback(): new connection [%s] from %s\n",
+                conn->getName().c_str(),
+                conn->getPeerAddr().toString().c_str());
+    } else {
+        printf("defaultConnectionCallback(): connection [%s] is down.\n",
+        conn->getName().c_str());
+    }
+}
 
+void server::net::defaultMessageCallback(const TcpConnectionPtr& conn, Buffer* buffer)
+{
+    printf("defaultMessageCallback(): received %zd bytes from connection [%s]\n",
+            buffer->readableBytes(), conn->getName().c_str());
+    printf("defaultMessageCallback(): [%s]\n", buffer->retrieveAllString().c_str());
+}
 
+void server::net::defaultCloseCallback(const TcpConnectionPtr& conn)
+{
+    printf("defaultCloseCallback(): connection [%s] closed.",
+            conn->getName().c_str());
+}
 
 TcpConnection::TcpConnection(EventLoop* loop, std::string& name, int sockfd, 
                     const InetAddress& localAddr, const InetAddress& peerAddr)
@@ -27,7 +50,7 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string& name, int sockfd,
 
 TcpConnection::~TcpConnection()
 {
-    printf("TcpConection deconstruct\n");
+    LOG_DEBUG << "TcpConection deconstruct";
 }
 
 void TcpConnection::connectEstablish()
@@ -42,11 +65,15 @@ void TcpConnection::connectEstablish()
 void TcpConnection::connectDestroyed()
 {
     loop_->assertInLoopThread();
-    assert(state_ == kConnected);
-    setState(kDisconnected);
-    channel_->disableAll();
-    connectionCallback_(shared_from_this());
-    loop_->removeChannel(channel_.get());
+    if (state_ == kConnected) {
+        setState(kDisconnected);
+        channel_->disableAll();
+        connectionCallback_(shared_from_this());
+    }
+    // setState(kDisconnected);
+    // channel_->disableAll();
+    // connectionCallback_(shared_from_this());
+    channel_->remove();
 }
 
 void TcpConnection::handleRead()
@@ -59,7 +86,7 @@ void TcpConnection::handleRead()
     } else if (n == 0) {
         handleClose();
     } else {
-        printf("ERROR in TcpConnection::handleRead().\n");
+        LOG_ERROR << "ERROR in TcpConnection::handleRead().";
         handleError();
     }
 
@@ -85,14 +112,14 @@ void TcpConnection::handleWrite()
 void TcpConnection::handleClose()
 {
     loop_->assertInLoopThread();
-    assert(state_ == kConnected);
-    printf("TcpConnection::handleClose.\n");
+    assert(state_ == kConnected || state_ == kDisconnecting);
+    LOG_DEBUG << "TcpConnection::handleClose.";
     channel_->disableAll();
     closeCallback_(shared_from_this());  // 回调让TcpServer删除这个连接
 }
 void TcpConnection::handleError()
 {
-    printf("TcpConnection::handleError.\n");
+    LOG_INFO << "TcpConnection::handleError.";
 }
 
 void TcpConnection::shutdown()
@@ -132,11 +159,11 @@ void TcpConnection::sendInLoop(const std::string& message)
         nwrote = ::write(channel_->fd(), message.data(), message.size());
         if (nwrote >= 0) {
             if (static_cast<size_t>(nwrote) < message.size()) {
-                printf("There is more data to write.\n");
+                LOG_INFO << "TcpConnection::sendInLoop() There is more data to write.";
             }
         } else {
             nwrote = 0;
-            printf("Error in TcpConnection::sendInLoop.\n");
+            LOG_ERROR << "Error write in TcpConnection::sendInLoop.";
         }
     }
     if (static_cast<size_t>(nwrote) < message.size()) {
@@ -144,5 +171,17 @@ void TcpConnection::sendInLoop(const std::string& message)
         if (!channel_->isWriting()) {
             channel_->enableWriting();
         }
+    } else {
+        LOG_DEBUG << "TcpConnection::sendInLoop() send all completely.";
     }
+}
+
+void TcpConnection::setTcpNoDelay(bool on) 
+{
+    socket_->setTcpNoDelay(on);
+}
+
+void TcpConnection::setKeepAlive(bool on)
+{
+    socket_->setKeepAlive(on);
 }

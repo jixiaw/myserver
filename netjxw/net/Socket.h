@@ -24,8 +24,12 @@ public:
     int accept(InetAddress* addr);
     void shutdownWrite();
 
-    static int createNonblockingSocket();
+    void setTcpNoDelay(bool on);
+    void setKeepAlive(bool on);
 
+    static int createNonblockingSocket();
+    static struct sockaddr_in getLocalAddr(int sockfd);
+    static struct sockaddr_in getPeerAddr(int sockfd);
 private:
     int sockfd_;
 };

@@ -19,6 +19,8 @@ target_link_libraries(acceptor_test net)
 
 add_executable(tcpserver_test tcpserver_test.cpp)
 target_link_libraries(tcpserver_test net)
+target_link_libraries(tcpserver_test ${CMAKE_THREAD_LIBS_INIT})
+
 
 add_executable(timer_test timer_test.cpp)
 target_link_libraries(timer_test net)
@@ -28,3 +30,12 @@ target_link_libraries(buffer_test net)
 
 add_executable(echoserver_test echoserver_test.cpp)
 target_link_libraries(echoserver_test net)
+target_link_libraries(echoserver_test ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(eventloopthreadpool_test eventloopthreadpool_test.cpp)
+target_link_libraries(eventloopthreadpool_test net)
+target_link_libraries(eventloopthreadpool_test ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(tcpclient_test tcpclient_test.cpp)
+target_link_libraries(tcpclient_test net)
+target_link_libraries(tcpclient_test ${CMAKE_THREAD_LIBS_INIT})

@@ -4,6 +4,8 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <assert.h>
+#include <string.h>
 namespace server {
 namespace net {
 
@@ -11,6 +13,7 @@ class Buffer{
 public:
     static const size_t kInitialSize = 1024;
     static const size_t kPrepend = 8;
+    static const char CRLF[];
     Buffer(size_t initialSize=kInitialSize)
     : buffer_(kPrepend + initialSize),
       readIdx_(kPrepend),
@@ -27,19 +30,26 @@ public:
     char* begin() { return &*(buffer_.begin()); }
 
     const char* peek() const { return begin() + readIdx_; }
-    char* peek() { return begin() + readIdx_; }
+    // char* peek() { return begin() + readIdx_; }
     
     char* beginWritable() { return begin() + writeIdx_; }
     const  char* beginWritable() const { return begin() + writeIdx_; }
 
     void append(const char* str, size_t len);
+    void append(const std::string& str);
     void makeSpace(size_t len);
 
     std::string retrieveAllString();
     std::string retrieveString(size_t len);
     void retrieveAll();
     void retrieve(size_t len);
+    void retrieveBefore(const char* end);
 
+    // 找 \r\n
+    const char* findCRLF(const char* start) const;
+    // 找 \n
+    const char* findCR(const char* start) const;
+    const char* findCRLF() const;
 private:
     std::vector<char> buffer_;
     size_t readIdx_;    // 可读位置

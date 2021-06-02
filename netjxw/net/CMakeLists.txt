@@ -34,4 +34,5 @@ target_link_libraries(net base)
 #file(GLOB HEADERS "*.h")
 #install(FILES ${HEADERS} DESTINATION include/netjxw/net)
 
+add_subdirectory(http)
 add_subdirectory(test)

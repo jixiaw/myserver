@@ -28,12 +28,6 @@ void server::net::defaultMessageCallback(const TcpConnectionPtr& conn, Buffer* b
     printf("defaultMessageCallback(): [%s]\n", buffer->retrieveAllString().c_str());
 }
 
-void server::net::defaultCloseCallback(const TcpConnectionPtr& conn)
-{
-    printf("defaultCloseCallback(): connection [%s] closed.",
-            conn->getName().c_str());
-}
-
 TcpConnection::TcpConnection(EventLoop* loop, std::string& name, int sockfd, 
                     const InetAddress& localAddr, const InetAddress& peerAddr)
 : loop_(loop),
@@ -42,7 +36,8 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string& name, int sockfd,
   socket_(new Socket(sockfd)),
   channel_(new Channel(loop, sockfd)),
   localAddr_(localAddr),
-  peerAddr_(peerAddr)
+  peerAddr_(peerAddr),
+  pContext_(NULL)
 {
     channel_->setReadCallBack(std::bind(&TcpConnection::handleRead, this));
     channel_->setWriteCallBack(std::bind(&TcpConnection::handleWrite, this));
@@ -145,20 +140,49 @@ void TcpConnection::send(const std::string& message)
             sendInLoop(message);
         } else {
             loop_->runInLoop(
-                std::bind(&TcpConnection::sendInLoop, this, message));
+                std::bind((void (TcpConnection::*)(const std::string&))&TcpConnection::sendInLoop, 
+                           this, message));
         }
     }
 }
 
-void TcpConnection::sendInLoop(const std::string& message)
+void TcpConnection::send(const char* message, size_t len)
+{
+    if (state_ == kConnected) {
+        if (loop_->isInLoopThread()) {
+            sendInLoop(message, len);
+        } else {
+            // 学习一下绑定重载函数
+            loop_->runInLoop(
+                std::bind((void (TcpConnection::*)(const char*, size_t))&TcpConnection::sendInLoop, 
+                           this, message, len));
+        }
+    }
+}
+
+void TcpConnection::send(Buffer* buffer)
+{
+    if (state_ == kConnected) {
+        if (loop_->isInLoopThread()) {
+            sendInLoop(buffer->peek(), buffer->readableBytes());
+            buffer->retrieveAll();
+        } else {
+            loop_->runInLoop(
+                std::bind((void (TcpConnection::*)(const std::string&))&TcpConnection::sendInLoop,
+                           this, buffer->retrieveAllString()));
+        }
+    }
+}
+
+void TcpConnection::sendInLoop(const char* message, size_t len)
 {
     loop_->assertInLoopThread();
     ssize_t nwrote = 0;
     // 如果缓冲区没有等待写的就直接写入
     if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0) {
-        nwrote = ::write(channel_->fd(), message.data(), message.size());
+        nwrote = ::write(channel_->fd(), message, len);
         if (nwrote >= 0) {
-            if (static_cast<size_t>(nwrote) < message.size()) {
+            if (static_cast<size_t>(nwrote) < len) {
                 LOG_INFO << "TcpConnection::sendInLoop() There is more data to write.";
             }
         } else {
@@ -166,14 +190,21 @@ void TcpConnection::sendInLoop(const std::string& message)
             LOG_ERROR << "Error write in TcpConnection::sendInLoop.";
         }
     }
-    if (static_cast<size_t>(nwrote) < message.size()) {
-        outputBuffer_.append(message.data() + nwrote, message.size()-nwrote);
+    // 没有全部写进去，监听写事件
+    if (static_cast<size_t>(nwrote) < len) {
+        outputBuffer_.append(message + nwrote, len-nwrote);
         if (!channel_->isWriting()) {
             channel_->enableWriting();
         }
     } else {
         LOG_DEBUG << "TcpConnection::sendInLoop() send all completely.";
     }
+}
+
+void TcpConnection::sendInLoop(const std::string& message)
+{
+    loop_->assertInLoopThread();
+    sendInLoop(message.c_str(), message.size());
 }
 
 void TcpConnection::setTcpNoDelay(bool on) 

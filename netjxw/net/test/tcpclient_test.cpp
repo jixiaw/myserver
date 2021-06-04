@@ -7,7 +7,7 @@
 
 using namespace std;
 using namespace server::net;
-using namespace server::base;
+using namespace server;
 
 EventLoop* g_loop;
 

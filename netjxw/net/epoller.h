@@ -30,6 +30,10 @@ public:
 
     void assertInLoopThread() {ownerLoop_->assertInLoopThread();}
 
+    static const int kNew = -1;
+    static const int kAdded = 1;
+    static const int kDeleted = 2;
+
 private:
     const static int kInitNumEvents = 16;
     //　遍历 pollfds_, 找出所有活动的fd, 添加进activeChannels

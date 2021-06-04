@@ -1,7 +1,7 @@
 #include "base/logging.h"
 #include "base/logstream.h"
 
-using namespace server::base;
+using namespace server;
 
 int main()
 {

@@ -5,7 +5,7 @@
 #include <algorithm>
 
 using namespace server::net;
-using namespace server::base;
+using namespace server;
 
 const char Buffer::CRLF[] = "\r\n";
 

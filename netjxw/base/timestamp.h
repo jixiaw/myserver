@@ -7,7 +7,6 @@
 #include <string>
 
 namespace server{
-namespace base{
 class TimeStamp{
 public:
     TimeStamp(): microSecond_(0) {};
@@ -50,7 +49,6 @@ inline bool operator<(TimeStamp lhs, TimeStamp rhs)
 inline bool operator==(TimeStamp lhs, TimeStamp rhs)
 {
     return lhs.getMicroSecond() == rhs.getMicroSecond();
-}
 }
 }
 #endif

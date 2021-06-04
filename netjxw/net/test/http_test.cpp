@@ -12,7 +12,7 @@ bool benchmark = false;
 
 void onRequest(const HttpRequest& req, HttpResponse* resp)
 {
-    std::cout << "Headers " << req.getMethodString() << " " << req.getPath() << std::endl;
+    // std::cout << "Headers " << req.getMethodString() << " " << req.getPath() << std::endl;
     if (!benchmark)
     {
         const std::map<string, string>& headers = req.getHeaderMap();
@@ -31,6 +31,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
         resp->setBody("<html><head><title>This is title</title></head>"
             "<body><h1>Hello</h1>Hello"
             "</body></html>");
+        resp->setCloseConnection(true);
     }
     else if (req.getPath() == "/favicon.ico")
     {
@@ -38,6 +39,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
         resp->setStatusMessage("OK");
         resp->setContentType("image/png");
         resp->setBody(string(favicon, sizeof favicon));
+        resp->setCloseConnection(true);
     }
     else if (req.getPath() == "/hello")
     {
@@ -130,14 +132,18 @@ char favicon[555] = {
 };
 
 
-int main()
+int main(int argc, char* argv[])
 {
     Logger::setLogLevel(Logger::TRACE);
     EventLoop loop;
-    InetAddress listenaddr(1234);
+    InetAddress listenaddr(1235);
     HttpServer server(&loop, listenaddr, "httpserver");
     server.setHttpCallback(onRequest);
-    server.setThreadNum(1);
+    if (argc > 1) {
+        Logger::setLogLevel(Logger::ERROR);
+        benchmark = true;
+        server.setThreadNum(atoi(argv[1]));
+    }
     server.start();
     loop.loop();
     return 0;

@@ -3,7 +3,6 @@
 #include <string>
 #include <iostream>
 namespace server {
-namespace base {
 class LogStream
 {
 public:
@@ -43,6 +42,5 @@ private:
     std::string data;
 };
 
-}
 }
 #endif

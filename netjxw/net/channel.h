@@ -3,7 +3,7 @@
 
 #include "base/noncopyable.h"
 #include <functional>
-// using namespace server::base;
+// using namespace server;
 namespace server {
 namespace net {
 

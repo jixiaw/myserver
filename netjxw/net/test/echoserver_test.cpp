@@ -25,6 +25,7 @@ public:
         string msg(buffer->retrieveAllString());
         cout<<conn->getName()<<" recv "<<msg.size()<<"bytes."<<endl;
         conn->send(msg);
+        conn->shutdown();
     }
 
     void onConnection(const TcpConnectionPtr& conn)

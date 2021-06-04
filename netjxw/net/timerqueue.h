@@ -9,8 +9,6 @@
 #include <vector>
 #include <functional>
 
-
-using namespace server::base;
 namespace server {
 namespace net{
 
@@ -42,7 +40,7 @@ public:
     std::vector<Timerptr> getExpired(TimeStamp now);
     // 重置已经到期的定时器
     void reset(const std::vector<Timerptr>& expired, TimeStamp now);
-
+    
 private:
     EventLoop* loop_;
     const int timerfd_;

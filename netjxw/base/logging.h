@@ -3,7 +3,6 @@
 #include "logstream.h"
 #include <string>
 namespace server {
-namespace base {
 
 class Logger 
 {
@@ -61,7 +60,7 @@ public:
     
 private:
     LogLevel tempLevel_;
-    server::base::LogStream logStream_;
+    server::LogStream logStream_;
 
 };
 
@@ -79,20 +78,20 @@ inline void Logger::setLogLevel(Logger::LogLevel level)
 //     g_logLevel = level;
 // } 
 
-}
+
 }
 
-#define LOG_TRACE if (server::base::Logger::getLogLevel() <= server::base::Logger::TRACE) \
-    server::base::Logger(server::base::Logger::TRACE).getStream()
-#define LOG_DEBUG if (server::base::Logger::getLogLevel() <= server::base::Logger::DEBUG) \
-    server::base::Logger(server::base::Logger::DEBUG).getStream()
-#define LOG_INFO if (server::base::Logger::getLogLevel() <= server::base::Logger::INFO) \
-    server::base::Logger(server::base::Logger::INFO).getStream()
-#define LOG_WARN if (server::base::Logger::getLogLevel() <= server::base::Logger::WARN) \
-    server::base::Logger(server::base::Logger::WARN).getStream()
-#define LOG_ERROR if (server::base::Logger::getLogLevel() <= server::base::Logger::ERROR) \
-    server::base::Logger(server::base::Logger::ERROR).getStream()
-#define LOG_FATAL if (server::base::Logger::getLogLevel() <= server::base::Logger::FATAL) \
-    server::base::Logger(server::base::Logger::FATAL).getStream()
+#define LOG_TRACE if (server::Logger::getLogLevel() <= server::Logger::TRACE) \
+    server::Logger(server::Logger::TRACE).getStream()
+#define LOG_DEBUG if (server::Logger::getLogLevel() <= server::Logger::DEBUG) \
+    server::Logger(server::Logger::DEBUG).getStream()
+#define LOG_INFO if (server::Logger::getLogLevel() <= server::Logger::INFO) \
+    server::Logger(server::Logger::INFO).getStream()
+#define LOG_WARN if (server::Logger::getLogLevel() <= server::Logger::WARN) \
+    server::Logger(server::Logger::WARN).getStream()
+#define LOG_ERROR if (server::Logger::getLogLevel() <= server::Logger::ERROR) \
+    server::Logger(server::Logger::ERROR).getStream()
+#define LOG_FATAL if (server::Logger::getLogLevel() <= server::Logger::FATAL) \
+    server::Logger(server::Logger::FATAL).getStream()
 
 #endif

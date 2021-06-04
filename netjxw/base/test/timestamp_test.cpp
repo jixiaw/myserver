@@ -1,7 +1,7 @@
 #include "base/timestamp.h"
 #include <iostream>
 #include <assert.h>
-using namespace server::base;
+using namespace server;
 
 
 int main(){

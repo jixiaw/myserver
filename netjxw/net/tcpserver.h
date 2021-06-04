@@ -30,9 +30,12 @@ public:
     void start();  // 开启监听
     void setConnectionCallback(const ConnectionCallback& cb) {connectionCallback_ = cb;};
     void setMessageCallback(const MessageCallback& cb) {messageCallback_ = cb;};
-    void setCloseCallback(const CloseCallback& cb) {closeCallback_ = cb;}
 
     void setNumThread(int numThread);
+
+    EventLoop* getLoop() const { return loop_; }
+    const std::string& getName() const { return name_; }
+    const std::string& getIpPort() const { return ipPort_; }
 
 private:
     // Acceptor accept 连接时回调这个函数建立连接
@@ -44,16 +47,18 @@ private:
     typedef std::map<std::string, TcpConnectionPtr> ConnectionMap;
 private:
     // int sockfd_;
-    InetAddress localAddr_;
     EventLoop* loop_;
+    InetAddress localAddr_;
+    const std::string ipPort_;
     const std::string name_;
     std::unique_ptr<Acceptor> acceptorPtr;
     ConnectionCallback connectionCallback_;  // 连接建立和断开时会调用，TcpConnection::connectEstablish和connectDestory
     MessageCallback messageCallback_;  // TcpConnection::handleRead调用
-    CloseCallback closeCallback_;  // 断开连接时调用， TcpConnection::handleClose里
+    // CloseCallback closeCallback_;  // 断开连接时调用， TcpConnection::handleClose里
     bool start_;
     int nextConnId_;
     ConnectionMap connectionMap_;
+    // 新建连接后从线程池中取出一个event线程来管理
     std::unique_ptr<EventLoopThreadPool> threadPool_;
 };
 

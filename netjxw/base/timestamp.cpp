@@ -1,7 +1,7 @@
 #include "timestamp.h"
 
 
-using namespace server::base;
+using namespace server;
 
 TimeStamp TimeStamp::now()
 {
@@ -38,7 +38,7 @@ std::string TimeStamp::toString()
     char buf[32];
     int64_t seconds = microSecond_ / microSecondPerSecond;
     int64_t microseconds = microSecond_ % microSecondPerSecond;
-    snprintf(buf, sizeof buf, "%d.%06d", seconds, microseconds);
+    snprintf(buf, sizeof buf, "%ld.%06ld", seconds, microseconds);
     return buf;
 }
 

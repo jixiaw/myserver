@@ -39,3 +39,11 @@ target_link_libraries(eventloopthreadpool_test ${CMAKE_THREAD_LIBS_INIT})
 add_executable(tcpclient_test tcpclient_test.cpp)
 target_link_libraries(tcpclient_test net)
 target_link_libraries(tcpclient_test ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(http_test http_test.cpp)
+target_link_libraries(http_test net)
+target_link_libraries(http_test http)
+target_link_libraries(http_test ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(httpcontext_test httpcontext_test.cpp)
+target_link_libraries(httpcontext_test http)

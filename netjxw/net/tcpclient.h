@@ -38,7 +38,6 @@ public:
 
     void setConnectionCallback(const ConnectionCallback& cb) {connectionCallback_ = cb;};
     void setMessageCallback(const MessageCallback& cb) {messageCallback_ = cb;};
-    void setCloseCallback(const CloseCallback& cb) {closeCallback_ = cb;}
 
 private:
     void newConnection(int sockfd);
@@ -50,7 +49,7 @@ private:
     const std::string name_;
     ConnectionCallback connectionCallback_;  // 连接建立和断开时会调用，TcpConnection::connectEstablish和connectDestory
     MessageCallback messageCallback_;  // TcpConnection::handleRead调用
-    CloseCallback closeCallback_;  // 断开连接时调用， TcpConnection::handleClose里
+    // CloseCallback closeCallback_;  // 断开连接时调用， TcpConnection::handleClose里
     bool connect_;
     TcpConnectionPtr connection_;
     int nextConnId_;

@@ -2,9 +2,12 @@
 #include "base/logging.h"
 #include <unistd.h>
 #include <sys/uio.h>
+#include <algorithm>
 
 using namespace server::net;
-using namespace server::base;
+using namespace server;
+
+const char Buffer::CRLF[] = "\r\n";
 
 ssize_t Buffer::readFd(int fd)
 {
@@ -36,6 +39,11 @@ void Buffer::append(const char* str, size_t len)
     writeIdx_ += len;
 }
 
+void Buffer::append(const std::string& str)
+{
+    append(str.c_str(), str.size());
+}
+
 void Buffer::makeSpace(size_t len) 
 {
     if (writableBytes() + prependableBytes() < len + kPrepend) {
@@ -61,7 +69,11 @@ void Buffer::retrieveAll()
     readIdx_ = kPrepend;
     writeIdx_ = kPrepend;
 }
-
+void Buffer::retrieveBefore(const char* end) {
+    assert(peek() <= end);
+    assert(end <= beginWritable());
+    retrieve(end - peek());
+}
 std::string Buffer::retrieveString(size_t len)
 {
     if (len > readableBytes()) {
@@ -77,4 +89,29 @@ std::string Buffer::retrieveString(size_t len)
 std::string Buffer::retrieveAllString()
 {
     return retrieveString(readableBytes());
+}
+
+const char* Buffer::findCRLF(const char* start) const {
+    assert(peek() <= start);
+    assert(start <= beginWritable());
+    const char* pos = std::search(start, beginWritable(), CRLF, CRLF+2);
+    return pos == beginWritable() ? NULL : pos;
+}
+
+const char* Buffer::findCR(const char* start) const {
+    assert(peek() <= start);
+    const char* end = beginWritable();
+    assert(start <= end);
+    const char* p = start;
+    while(p < end) {
+        if (*p == '\n') {
+            return p;
+        }
+        ++p;
+    }
+    return NULL;
+}
+
+const char* Buffer::findCRLF() const {
+    return findCRLF(peek());
 }

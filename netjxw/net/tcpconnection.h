@@ -40,9 +40,14 @@ public:
     bool connected() {return state_ == kConnected;}
 
     void send(const std::string& message);
+    void send(Buffer* buffer);
+    void send(const char* message, size_t len);
     void shutdown();
     void setTcpNoDelay(bool on);
     void setKeepAlive(bool on);
+
+    void setContext(void* context) { pContext_ = context; }
+    void* getContext() const { return pContext_; }
 
 private:
     enum State {kConnecting = 0, kConnected, kDisconnected, kDisconnecting};
@@ -54,6 +59,7 @@ private:
     void handleError();
 
     void sendInLoop(const std::string& message);
+    void sendInLoop(const char* message, size_t len);
     void shutdownInLoop();
 
     EventLoop* loop_;
@@ -68,6 +74,7 @@ private:
     CloseCallback closeCallback_;
     Buffer inputBuffer_;    // 接收数据的buffer
     Buffer outputBuffer_;   // 发送数据的buffer
+    void* pContext_;
 };
 
 }

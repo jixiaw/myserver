@@ -5,11 +5,16 @@
 #include <thread>
 #include <unistd.h>
 #include <sys/timerfd.h>
+#include <sys/syscall.h>
 using namespace server::net;
+
+pid_t gettid() {
+    return static_cast<pid_t>(::syscall(SYS_gettid));
+}
 
 void threadFunc()
 {
-    printf("pid = %d, tid = %lld\n", getpid(), std::this_thread::get_id());
+    printf("pid = %d, tid = %d\n", getpid(), gettid());
     EventLoop loop;
     loop.loop();
 }
@@ -34,7 +39,7 @@ void writestd()
 }
 int main()
 {
-    printf("pid = %d, tid = %lld\n", getpid(), std::this_thread::get_id());
+    printf("pid = %d, tid = %d\n", getpid(), gettid());
     EventLoop loop;
     g_loop = &loop;
     #if 0

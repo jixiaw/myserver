@@ -3,7 +3,7 @@
 #include <iostream>
 #include "base/logging.h"
 using namespace server::net;
-using namespace server::base;
+using namespace server;
 
 Poller::Poller(EventLoop* loop)
     : ownerLoop_(loop)

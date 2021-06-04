@@ -15,7 +15,6 @@ TcpClient::TcpClient(EventLoop* loop,
   connect_(true),
   connectionCallback_(defaultConnectionCallback),
   messageCallback_(defaultMessageCallback),
-  closeCallback_(defaultCloseCallback),
   nextConnId_(0)
 {
     connector_->setNewConnectionCallback(

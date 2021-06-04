@@ -4,7 +4,6 @@
 #include "base/noncopyable.h"
 #include "base/timestamp.h"
 #include <functional>
-using namespace server::base;
 
 namespace server {
 namespace net{

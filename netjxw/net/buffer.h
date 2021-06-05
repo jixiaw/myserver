@@ -44,7 +44,7 @@ public:
     void retrieveAll();
     void retrieve(size_t len);
     void retrieveBefore(const char* end);
-
+    size_t size() const { return buffer_.size(); }
     // 找 \r\n
     const char* findCRLF(const char* start) const;
     // 找 \n

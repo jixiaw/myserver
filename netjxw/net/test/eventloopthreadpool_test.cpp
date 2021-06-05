@@ -1,6 +1,7 @@
 #include "net/tcpserver.h"
 #include "net/eventloop.h"
 #include "net/inetaddress.h"
+#include "base/logging.h"
 #include <string>
 #include <unistd.h>
 using namespace server::net;
@@ -21,9 +22,9 @@ public:
 
     void onMessage(const TcpConnectionPtr& conn, Buffer* buffer)
     {
-        string msg(buffer->retrieveAllString());
+        // string msg(buffer->retrieveAllString());
         // cout<<conn->getName()<<" recv "<<msg.size()<<"bytes."<<endl;
-        conn->send(msg);
+        conn->send(buffer);
     }
     void onConnection(const TcpConnectionPtr& conn)
     {
@@ -53,6 +54,7 @@ private:
 int main(int argc, char* argv[])
 {
     cout<<"pid = "<<getpid()<<endl;
+    Logger::setLogLevel(Logger::WARN);
     if (argc > 1) {
         EventLoop loop;
         InetAddress listenaddr(stoi(argv[1]));

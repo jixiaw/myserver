@@ -47,3 +47,7 @@ target_link_libraries(http_test ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(httpcontext_test httpcontext_test.cpp)
 target_link_libraries(httpcontext_test http)
+
+add_executable(write_test write_test.cpp)
+target_link_libraries(write_test net)
+target_link_libraries(write_test ${CMAKE_THREAD_LIBS_INIT})

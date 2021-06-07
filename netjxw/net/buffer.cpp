@@ -25,7 +25,7 @@ ssize_t Buffer::readFd(int fd)
     } else if (static_cast<size_t>(n) <= writable) {
         writeIdx_ += n;
     } else {
-        append(buf, n);
+        append(buf, n - writable);
     }
     return n;
 }

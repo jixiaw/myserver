@@ -3,6 +3,7 @@
 #include "net/tcpconnection.h"
 #include "net/inetaddress.h"
 #include "net/buffer.h"
+#include "base/logging.h"
 
 using namespace std;
 using namespace server::net;
@@ -11,12 +12,14 @@ using namespace server;
 void onCompleteWrite(const TcpConnectionPtr& conn)
 {
     printf("onCompleteWrite\n");
+    conn->startRead();
 
 }
 
 void onHighWater(const TcpConnectionPtr& conn, size_t mark)
 {
-    printf("onHighWater\n");
+    printf("onHighWater: %ld\n", mark);
+    conn->stopRead();
 }
 
 void onMessage(const TcpConnectionPtr& conn, Buffer* buffer)
@@ -37,7 +40,7 @@ void onConnection(const TcpConnectionPtr& conn)
         conn->setTcpNoDelay(true);
         conn->setKeepAlive(true);
         conn->setWriteCompleteCallback(onCompleteWrite);
-        conn->setHighWaterMarkCallback(onHighWater, 16*1024);
+        conn->setHighWaterMarkCallback(onHighWater, 512*1024);
     } else {
         printf("onConnection: dis connection [%s] from %s\n",
             conn->getName().c_str(),
@@ -46,10 +49,16 @@ void onConnection(const TcpConnectionPtr& conn)
 }
 
 
-int main()
+int main(int argc, char* argv[])
 {
+    Logger::setLogLevel(Logger::TRACE);
     EventLoop loop;
-    TcpServer server_(&loop, InetAddress(1234), "test write");
+    int port = 1234;
+    if (argc > 1) {
+        port = atoi(argv[1]);
+    }
+    printf("listen in %d\n", port);
+    TcpServer server_(&loop, InetAddress(port), "test write");
     server_.setConnectionCallback(onConnection);
     server_.setMessageCallback(onMessage);
     server_.start();

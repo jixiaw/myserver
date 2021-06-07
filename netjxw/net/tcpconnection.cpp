@@ -75,7 +75,7 @@ void TcpConnection::connectDestroyed()
 
 void TcpConnection::handleRead()
 {
-    char buf[4096];
+    // char buf[4096];
     // ssize_t n = ::read(channel_->fd(), buf, sizeof buf);
     ssize_t n = inputBuffer_.readFd(channel_->fd());
     if (n > 0){
@@ -90,13 +90,16 @@ void TcpConnection::handleRead()
 }
 void TcpConnection::handleWrite()
 {
+    LOG_DEBUG << "TcpConnection::handleWrite()";
     loop_->assertInLoopThread();
     if (channel_->isWriting()){
         ssize_t n = ::write(channel_->fd(), 
                     outputBuffer_.peek(), outputBuffer_.readableBytes());
+        LOG_DEBUG << "TcpConnection::handleWrite() write size " << n;
         if (n > 0) {
             outputBuffer_.retrieve(n);
             if (outputBuffer_.readableBytes() == 0) {
+                LOG_DEBUG << "TcpConnection::handleWrite() disablewrite.";
                 channel_->disableWriting();
                 if (writeCompleteCallback_) {
                     loop_->queueInLoop(
@@ -105,6 +108,8 @@ void TcpConnection::handleWrite()
                 if (state_ == kDisconnecting) {
                     shutdownInLoop();
                 }
+            } else {
+                LOG_DEBUG << "TcpConnection::handleWrite() remaining size " << outputBuffer_.readableBytes();
             }
         }
     }
@@ -191,7 +196,7 @@ void TcpConnection::sendInLoop(const char* message, size_t len)
             if (static_cast<size_t>(nwrote) < len) {
                 LOG_INFO << "TcpConnection::sendInLoop() There is more data to write.";
             } else if (writeCompleteCallback_) {
-                LOG_INFO << "TcpConnection::sendInLoop() all data wrote.";
+                LOG_INFO << "TcpConnection::sendInLoop() all data wrote: " << nwrote;
                 loop_->queueInLoop(
                     std::bind(writeCompleteCallback_, shared_from_this()));
             }
@@ -242,9 +247,11 @@ void TcpConnection::startReadInLoop()
 {
     loop_->assertInLoopThread();
     if (!reading_ || !channel_->isReading()) {
+        LOG_DEBUG << "TcpConnection::startReadInLoop()";
         reading_ = true;
         channel_->enableReading();
     }
+    handleRead();
 }
 
 void TcpConnection::stopRead()
@@ -256,6 +263,7 @@ void TcpConnection::stopReadInLoop()
 {
     loop_->assertInLoopThread();
     if (reading_ || channel_->isReading()) {
+        LOG_DEBUG << "TcpConnection::stopReadInLoop()";
         reading_ = false;
         channel_->disableReading();
     }

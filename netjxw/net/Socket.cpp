@@ -17,7 +17,8 @@ int Socket::accept(InetAddress* addr)
     struct sockaddr_in sockaddr;
     bzero(&sockaddr, sizeof sockaddr);
     socklen_t addrlen = sizeof(sockaddr);
-    int connfd = ::accept(sockfd_, (struct sockaddr*)&sockaddr, &addrlen);
+    // int connfd = ::accept(sockfd_, (struct sockaddr*)&sockaddr, &addrlen);
+    int connfd = ::accept4(sockfd_, (struct sockaddr*)&sockaddr, &addrlen, SOCK_CLOEXEC | SOCK_NONBLOCK);
     if (connfd >= 0) {
         addr->setSockAddr(sockaddr);
     }

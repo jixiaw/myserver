@@ -65,8 +65,8 @@ private:
     bool callingPendingFunctors_;
     int wakeupFd_;
     std::unique_ptr<Channel> wakeupChannel_;
-    // std::unique_ptr<Epoller> poller_;
-    std::unique_ptr<Poller> poller_;
+    std::unique_ptr<Epoller> poller_;
+    // std::unique_ptr<Poller> poller_;
     ChannelList activeChannels_;
     mutable std::mutex mutex_;
     std::vector<Functor> pendingFunctors_;

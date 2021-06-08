@@ -65,6 +65,7 @@ void Poller::updateChannel(Channel* channel)
         assert(idx >= 0 && idx < static_cast<int>(pollfds_.size()));
         struct pollfd &pfd = pollfds_[idx];
         assert(pfd.fd == channel->fd() || pfd.fd == -channel->fd()-1);
+        pfd.fd = channel->fd();
         pfd.events = static_cast<short>(channel->events());
         pfd.revents = 0;
         if (channel->isNoneEvent()) {  // 没有要监听的事件就将fd变成负数

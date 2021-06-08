@@ -43,6 +43,8 @@ TcpConnection::TcpConnection(EventLoop* loop, std::string& name, int sockfd,
 {
     channel_->setReadCallBack(std::bind(&TcpConnection::handleRead, this));
     channel_->setWriteCallBack(std::bind(&TcpConnection::handleWrite, this));
+    channel_->setCloseCallBack(std::bind(&TcpConnection::handleClose, this));
+    channel_->setErrorCallBack(std::bind(&TcpConnection::handleError, this));
 }
 
 TcpConnection::~TcpConnection()
@@ -92,6 +94,7 @@ void TcpConnection::handleWrite()
 {
     LOG_DEBUG << "TcpConnection::handleWrite()";
     loop_->assertInLoopThread();
+    // 有些channel可能已经关闭了
     if (channel_->isWriting()){
         ssize_t n = ::write(channel_->fd(), 
                     outputBuffer_.peek(), outputBuffer_.readableBytes());
@@ -120,12 +123,17 @@ void TcpConnection::handleClose()
     loop_->assertInLoopThread();
     assert(state_ == kConnected || state_ == kDisconnecting);
     LOG_DEBUG << "TcpConnection::handleClose.";
+    setState(kDisconnected);
     channel_->disableAll();
     closeCallback_(shared_from_this());  // 回调让TcpServer删除这个连接
 }
+
 void TcpConnection::handleError()
 {
-    LOG_INFO << "TcpConnection::handleError.";
+    int err = Socket::getSocketError(channel_->fd());
+    char buf[512];
+    LOG_ERROR << "TcpConnection::handleError [" << name_ 
+              << "] - socket error = " << err <<" "<< strerror_r(err, buf, sizeof buf);
 }
 
 void TcpConnection::shutdown()
@@ -251,7 +259,6 @@ void TcpConnection::startReadInLoop()
         reading_ = true;
         channel_->enableReading();
     }
-    handleRead();
 }
 
 void TcpConnection::stopRead()

@@ -25,6 +25,7 @@ Epoller::~Epoller()
 
 int Epoller::poll(int timeoutMs, ChannelList* activeChannels)
 {
+    LOG_DEBUG << "fd total count " << channelMap_.size();
     int numEvents = ::epoll_wait(epollfd_, &*events_.begin(), 
                 static_cast<int>(events_.size()), timeoutMs);
     if (numEvents > 0) {
@@ -33,6 +34,7 @@ int Epoller::poll(int timeoutMs, ChannelList* activeChannels)
         // expand events size
         if (static_cast<size_t>(numEvents) == events_.size()) {
             events_.resize(2 * numEvents);
+            LOG_DEBUG << "Epoller::poll() resize eventsVec: " << events_.size();
         }
     } else if (numEvents == 0) {
         LOG_INFO << "Epoller::poll() nothing happened";
@@ -47,7 +49,6 @@ void Epoller::updateChannel(Channel* channel)
 {
     int fd = channel->fd();
     int state = channel->index();
-    LOG_DEBUG << "Epoller::updateChannel() fd: " << fd <<" state: " << state;
     // 新加入的或者已经删除的
     if (state == kNew || state == kDeleted) {
         if (state == kNew) {  // 新加入的在map里找不到
@@ -73,10 +74,13 @@ void Epoller::updateChannel(Channel* channel)
         // 没有事件，从epoll中删除，但还在map里
         if (channel->isNoneEvent()) {
             ::epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &ep);
+            channel->setIndex(kDeleted);
         } else {
             ::epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &ep);
         }
     }
+    LOG_DEBUG << "Epoller::updateChannel() fd: " << fd <<" state: " 
+            << state << " -> " <<channel->index();
 }
 
 void Epoller::removeChannel(Channel* channel)
@@ -85,6 +89,7 @@ void Epoller::removeChannel(Channel* channel)
     int fd = channel->fd();
     int state = channel->index();
     assert(state == kDeleted || state == kAdded);
+    channel->setIndex(kDeleted);
     auto it = channelMap_.find(fd);
     assert(it != channelMap_.end());
     assert(it->second == channel);

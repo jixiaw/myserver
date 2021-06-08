@@ -30,6 +30,7 @@ public:
     static int createNonblockingSocket();
     static struct sockaddr_in getLocalAddr(int sockfd);
     static struct sockaddr_in getPeerAddr(int sockfd);
+    static int getSocketError(int sockfd);
 private:
     int sockfd_;
 };

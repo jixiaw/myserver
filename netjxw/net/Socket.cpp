@@ -95,3 +95,15 @@ struct sockaddr_in Socket::getPeerAddr(int sockfd)
     }
     return peeraddr;
 }
+
+int Socket::getSocketError(int sockfd) 
+{
+    int opt;
+    socklen_t optlen = static_cast<socklen_t>(sizeof opt);
+    if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &opt, &optlen) < 0) {
+        return errno;
+    } else {
+        return opt;
+    }
+}
+

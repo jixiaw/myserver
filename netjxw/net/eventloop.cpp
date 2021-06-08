@@ -28,8 +28,8 @@ EventLoop::EventLoop()
       callingPendingFunctors_(false),
       wakeupFd_(createEventfd()),
       wakeupChannel_(new Channel(this, wakeupFd_)),
-    //   poller_(new Epoller(this)),
-      poller_(new Poller(this)),
+      poller_(new Epoller(this)),
+    //   poller_(new Poller(this)),
       timerQueue_(new TimerQueue(this))
 {
     if (t_loopInThisThread) {

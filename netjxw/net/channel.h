@@ -2,6 +2,7 @@
 #define SERVER_NET_CHANNEL_H
 
 #include "base/noncopyable.h"
+#include <string>
 #include <functional>
 // using namespace server;
 namespace server {
@@ -48,6 +49,9 @@ public:
 
     EventLoop* ownerLoop() {return loop_;}; 
 
+    std::string eventsToString() const;
+    std::string reventsToString() const;
+    static std::string eventsToString(int fd, int ev);
 private:
     void update();
 

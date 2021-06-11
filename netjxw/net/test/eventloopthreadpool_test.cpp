@@ -54,13 +54,16 @@ private:
 int main(int argc, char* argv[])
 {
     cout<<"pid = "<<getpid()<<endl;
-    Logger::setLogLevel(Logger::WARN);
+    Logger::setLogLevel(Logger::DEBUG);
     if (argc > 1) {
         EventLoop loop;
         InetAddress listenaddr(stoi(argv[1]));
         int numThread = 0;
         if (argc > 2) {
             numThread = stoi(argv[2]);
+        }
+        if (argc > 3) {
+            Logger::setLogLevel(Logger::WARN);
         }
         EchoServer server(&loop, listenaddr, numThread);
         cout<<"listening in "<<listenaddr.toString()<<endl;

@@ -28,7 +28,7 @@ int Socket::accept(InetAddress* addr)
 void Socket::listen()
 {
     int ret;
-    ret = ::listen(sockfd_, 5);
+    ret = ::listen(sockfd_, SOMAXCONN);
     if (0 != ret) {
         LOG_ERROR << "Socket::listen() error: " << ret;
     }
@@ -104,6 +104,20 @@ int Socket::getSocketError(int sockfd)
         return errno;
     } else {
         return opt;
+    }
+}
+
+void Socket::setReuseAddr(bool on)
+{
+    int opt = on ? 1: 0;
+    ::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &opt, static_cast<socklen_t>(sizeof opt));
+}
+void Socket::setReusePort(bool on)
+{
+    int opt = on ? 1 : 0;
+    int ret = ::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEPORT, &opt, static_cast<socklen_t>(sizeof opt));
+    if (ret < 0 && on) {
+        LOG_ERROR << "Socket::setReuseAddr() SO_REUSEPORT failed.";
     }
 }
 

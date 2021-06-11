@@ -44,7 +44,6 @@ EventLoop* EventLoopThreadPool::getLoop()
     EventLoop* loop = baseLoop_;
     if (!loops_.empty()) {
         loop = loops_[next_];
-        LOG_DEBUG << "EventLoopThreadPool::getLoop() gets [" << threads_[next_]->getName() << "].";
         ++next_;
         if (static_cast<size_t>(next_) >= loops_.size()) {
             next_ = 0;

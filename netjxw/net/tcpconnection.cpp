@@ -92,7 +92,7 @@ void TcpConnection::handleRead()
 }
 void TcpConnection::handleWrite()
 {
-    LOG_DEBUG << "TcpConnection::handleWrite()";
+    LOG_TRACE << "TcpConnection::handleWrite()";
     loop_->assertInLoopThread();
     // 有些channel可能已经关闭了
     if (channel_->isWriting()){
@@ -122,10 +122,12 @@ void TcpConnection::handleClose()
 {
     loop_->assertInLoopThread();
     assert(state_ == kConnected || state_ == kDisconnecting);
-    LOG_DEBUG << "TcpConnection::handleClose.";
+    LOG_TRACE << "TcpConnection::handleClose().";
     setState(kDisconnected);
     channel_->disableAll();
-    closeCallback_(shared_from_this());  // 回调让TcpServer删除这个连接
+    TcpConnectionPtr thr(shared_from_this());
+    connectionCallback_(thr);
+    closeCallback_(thr);  // 回调让TcpServer删除这个连接
 }
 
 void TcpConnection::handleError()
@@ -225,9 +227,9 @@ void TcpConnection::sendInLoop(const char* message, size_t len)
             channel_->enableWriting();
         }
     } else {
-        LOG_INFO << "TcpConnection::sendInLoop() send all completely.";
+        LOG_DEBUG << "TcpConnection::sendInLoop() send all completely.";
     }
-    LOG_INFO << "TcpConnection::sendInLoop() buffer: "<<outputBuffer_.readableBytes();
+    LOG_DEBUG << "TcpConnection::sendInLoop() buffer: "<<outputBuffer_.readableBytes();
 }
 
 void TcpConnection::sendInLoop(const std::string& message)

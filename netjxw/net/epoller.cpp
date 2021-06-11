@@ -25,7 +25,7 @@ Epoller::~Epoller()
 
 int Epoller::poll(int timeoutMs, ChannelList* activeChannels)
 {
-    LOG_DEBUG << "fd total count " << channelMap_.size();
+    LOG_DEBUG << "epollfd: " <<epollfd_<<" fd total count " << channelMap_.size();
     int numEvents = ::epoll_wait(epollfd_, &*events_.begin(), 
                 static_cast<int>(events_.size()), timeoutMs);
     if (numEvents > 0) {

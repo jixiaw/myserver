@@ -31,6 +31,8 @@ public:
     static struct sockaddr_in getLocalAddr(int sockfd);
     static struct sockaddr_in getPeerAddr(int sockfd);
     static int getSocketError(int sockfd);
+    void setReuseAddr(bool on);
+    void setReusePort(bool on);
 private:
     int sockfd_;
 };

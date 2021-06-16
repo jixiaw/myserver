@@ -1,6 +1,7 @@
 #ifndef SERVER_BASE_LOGGING_H
 #define SERVER_BASE_LOGGING_H
 #include "logstream.h"
+#include "base/timestamp.h"
 #include <string>
 namespace server {
 
@@ -19,6 +20,8 @@ public:
     Logger(LogLevel level) 
     : tempLevel_(level)
     {
+        TimeStamp t = TimeStamp::now();
+        logStream_ << t.toFormatString() << " ";
         logStream_ << getLevelString(level);
     }
     ~Logger() {

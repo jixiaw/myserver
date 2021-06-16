@@ -25,8 +25,37 @@ public:
         return *this;
     }
 
-    template<class T>
-    LogStream& operator<<(T x) {
+    LogStream& operator<<(int x) {
+        data.append(std::to_string(x));
+        return *this;
+    }
+
+    LogStream& operator<<(uint x) {
+        data.append(std::to_string(x));
+        return *this;
+    }
+
+    LogStream& operator<<(int64_t x) {
+        data.append(std::to_string(x));
+        return *this;
+    }
+
+    LogStream& operator<<(uint64_t x) {
+        data.append(std::to_string(x));
+        return *this;
+    }
+
+    LogStream& operator<<(int16_t x) {
+        data.append(std::to_string(x));
+        return *this;
+    }
+    
+    LogStream& operator<<(uint16_t x) {
+        data.append(std::to_string(x));
+        return *this;
+    }
+    
+    LogStream& operator<<(double x) {
         data.append(std::to_string(x));
         return *this;
     }

@@ -33,6 +33,12 @@ public:
     void setConnectionCallback(const ConnectionCallback& cb) {connectionCallback_ = cb;};
     void setMessageCallback(const MessageCallback& cb) {messageCallback_ = cb;};
     void setCloseCallback(const CloseCallback& cb) {closeCallback_ = cb;}
+    void setWriteCompleteCallback(const WriteCompleteCallback& cb)
+    { writeCompleteCallback_ = cb; }
+
+    void setHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t highWaterMark)
+    { highWaterMarkCallback_ = cb; highWaterMark_ = highWaterMark; }
+
 
     std::string getName(){ return name_; }
     const InetAddress& getPeerAddr() { return peerAddr_; }
@@ -43,11 +49,16 @@ public:
     void send(Buffer* buffer);
     void send(const char* message, size_t len);
     void shutdown();
+
     void setTcpNoDelay(bool on);
     void setKeepAlive(bool on);
 
     void setContext(void* context) { pContext_ = context; }
     void* getContext() const { return pContext_; }
+
+    void startRead();
+    void stopRead();
+    bool isReading() const { return reading_; }
 
 private:
     enum State {kConnecting = 0, kConnected, kDisconnected, kDisconnecting};
@@ -62,9 +73,13 @@ private:
     void sendInLoop(const char* message, size_t len);
     void shutdownInLoop();
 
+    void startReadInLoop();
+    void stopReadInLoop();
+private:
     EventLoop* loop_;
     std::string name_;
     State state_;
+    bool reading_;
     std::unique_ptr<Socket> socket_;  // connect socket
     std::unique_ptr<Channel> channel_;
     InetAddress localAddr_;     // server addr
@@ -72,6 +87,9 @@ private:
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
     CloseCallback closeCallback_;
+    WriteCompleteCallback writeCompleteCallback_;
+    HighWaterMarkCallback highWaterMarkCallback_;
+    size_t highWaterMark_;
     Buffer inputBuffer_;    // 接收数据的buffer
     Buffer outputBuffer_;   // 发送数据的buffer
     void* pContext_;

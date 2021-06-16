@@ -18,6 +18,11 @@ typedef std::function<void(const TcpConnectionPtr&)> ConnectionCallback;
 typedef std::function<void(const TcpConnectionPtr&, 
                             Buffer* buffer)> MessageCallback;
 typedef std::function<void(const TcpConnectionPtr&)> CloseCallback;
+// 写缓冲区清空时调用
+typedef std::function<void(const TcpConnectionPtr&)> WriteCompleteCallback;
+// 写缓冲区到达一定容量时调用
+typedef std::function<void(const TcpConnectionPtr&, 
+                            size_t)> HighWaterMarkCallback;
 
 void defaultConnectionCallback(const TcpConnectionPtr&);
 void defaultMessageCallback(const TcpConnectionPtr&, 

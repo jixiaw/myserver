@@ -47,3 +47,16 @@ target_link_libraries(http_test ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(httpcontext_test httpcontext_test.cpp)
 target_link_libraries(httpcontext_test http)
+
+add_executable(write_test write_test.cpp)
+target_link_libraries(write_test net)
+target_link_libraries(write_test ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(file_downloader file_downloader.cpp)
+target_link_libraries(file_downloader net)
+target_link_libraries(file_downloader ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(file_httpdownload file_httpdownload.cpp)
+target_link_libraries(file_httpdownload net)
+target_link_libraries(file_httpdownload http)
+target_link_libraries(file_httpdownload ${CMAKE_THREAD_LIBS_INIT})

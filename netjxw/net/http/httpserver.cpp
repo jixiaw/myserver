@@ -67,6 +67,7 @@ void HttpServer::onRequest(const TcpConnectionPtr& conn, const HttpRequest& req)
             (req.getVersion() == HttpRequest::kHttp10 
                 && connection != "Keep-Alive")) {
         close = true;
+        LOG_INFO << "HttpServer::onRequest() close on";
     }
     // 生成http响应
     HttpResponse response(close);

@@ -41,6 +41,7 @@ void Channel::remove()
 void Channel::handleEvent()
 {
     eventHandling = true;
+    LOG_DEBUG << reventsToString();
     if (revents_ & POLLNVAL) {  // 非法请求
         LOG_ERROR << "Channel::handleEvent() event POLLNVAL";
         loop_->quit();
@@ -58,4 +59,34 @@ void Channel::handleEvent()
         if (writeCallBack_) writeCallBack_();
     }
     eventHandling = false;
+}
+
+std::string Channel::eventsToString() const
+{
+    return eventsToString(fd_, events_);
+}
+
+std::string Channel::reventsToString() const
+{
+    return eventsToString(fd_, revents_);
+}
+
+std::string Channel::eventsToString(int fd, int ev)
+{
+    std::string res = std::to_string(fd) + ": ";
+    if (ev & POLLIN)
+        res.append("IN ");
+    if (ev & POLLPRI)
+        res.append("PRI ");
+    if (ev & POLLOUT)
+        res.append("OUT ");
+    if (ev & POLLHUP)
+        res.append("HUP ");
+    if (ev & POLLRDHUP)
+        res.append("RDHUP ");
+    if (ev & POLLERR)
+        res.append("ERR ");
+    if (ev & POLLNVAL)
+        res.append("NVAL ");
+    return res;
 }

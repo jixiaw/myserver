@@ -1,4 +1,5 @@
 #include "acceptor.h"
+#include "base/logging.h"
 #include <iostream>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -11,6 +12,8 @@ Acceptor::Acceptor(EventLoop* loop, const InetAddress& listenAddr)
   acceptChannel_(loop, acceptSocket_.getFd()),
   listenning_(false)
 {
+    acceptSocket_.setReuseAddr(true);
+    acceptSocket_.setReusePort(true);
     acceptSocket_.bind(listenAddr);
     acceptChannel_.setReadCallBack(std::bind(&Acceptor::handleRead, this));
 }
@@ -42,4 +45,5 @@ void Acceptor::handleRead()
             ::close(connfd);
         }
     }
+    LOG_DEBUG << "Acceptor::handleRead() accepts connfd: " << connfd;
 }

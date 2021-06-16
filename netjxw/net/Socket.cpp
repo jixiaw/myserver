@@ -17,7 +17,8 @@ int Socket::accept(InetAddress* addr)
     struct sockaddr_in sockaddr;
     bzero(&sockaddr, sizeof sockaddr);
     socklen_t addrlen = sizeof(sockaddr);
-    int connfd = ::accept(sockfd_, (struct sockaddr*)&sockaddr, &addrlen);
+    // int connfd = ::accept(sockfd_, (struct sockaddr*)&sockaddr, &addrlen);
+    int connfd = ::accept4(sockfd_, (struct sockaddr*)&sockaddr, &addrlen, SOCK_CLOEXEC | SOCK_NONBLOCK);
     if (connfd >= 0) {
         addr->setSockAddr(sockaddr);
     }
@@ -27,7 +28,7 @@ int Socket::accept(InetAddress* addr)
 void Socket::listen()
 {
     int ret;
-    ret = ::listen(sockfd_, 5);
+    ret = ::listen(sockfd_, SOMAXCONN);
     if (0 != ret) {
         LOG_ERROR << "Socket::listen() error: " << ret;
     }
@@ -94,3 +95,29 @@ struct sockaddr_in Socket::getPeerAddr(int sockfd)
     }
     return peeraddr;
 }
+
+int Socket::getSocketError(int sockfd) 
+{
+    int opt;
+    socklen_t optlen = static_cast<socklen_t>(sizeof opt);
+    if (::getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &opt, &optlen) < 0) {
+        return errno;
+    } else {
+        return opt;
+    }
+}
+
+void Socket::setReuseAddr(bool on)
+{
+    int opt = on ? 1: 0;
+    ::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &opt, static_cast<socklen_t>(sizeof opt));
+}
+void Socket::setReusePort(bool on)
+{
+    int opt = on ? 1 : 0;
+    int ret = ::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEPORT, &opt, static_cast<socklen_t>(sizeof opt));
+    if (ret < 0 && on) {
+        LOG_ERROR << "Socket::setReuseAddr() SO_REUSEPORT failed.";
+    }
+}
+

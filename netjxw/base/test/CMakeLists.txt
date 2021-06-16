@@ -12,3 +12,5 @@ add_executable(threadpool_test threadpool_test.cpp)
 target_link_libraries(threadpool_test base)
 target_link_libraries(threadpool_test ${CMAKE_THREAD_LIBS_INIT})
 
+add_executable(fileutil_test fileutil_test.cpp)
+target_link_libraries(fileutil_test base)

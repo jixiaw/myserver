@@ -2,6 +2,7 @@
 #define SERVER_NET_CHANNEL_H
 
 #include "base/noncopyable.h"
+#include <string>
 #include <functional>
 // using namespace server;
 namespace server {
@@ -35,8 +36,11 @@ public:
     void enableReading() {events_ |= kReadEvent; update();}
     void enableWriting() {events_ |= kWriteEvent; update();}
     void disableWriting() {events_ &= ~kWriteEvent; update();}
+    void disableReading() { events_ &= ~kReadEvent; update(); }
     void disableAll() {events_ = kNoneEvent; update(); }
-    bool isWriting() const {return events_ & kWriteEvent; }
+
+    bool isWriting() const { return events_ & kWriteEvent; }
+    bool isReading() const { return events_ & kReadEvent; }
 
     int index() {return index_;};
     void setIndex(int idx) { index_ = idx; };
@@ -45,6 +49,9 @@ public:
 
     EventLoop* ownerLoop() {return loop_;}; 
 
+    std::string eventsToString() const;
+    std::string reventsToString() const;
+    static std::string eventsToString(int fd, int ev);
 private:
     void update();
 

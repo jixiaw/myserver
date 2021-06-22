@@ -2,6 +2,7 @@
 #include "eventloop.h"
 #include "base/logging.h"
 #include <poll.h>
+#include <sys/epoll.h>
 
 #include <iostream>
 
@@ -9,9 +10,17 @@
 using namespace server::net;
 
 
+static_assert(POLLIN == EPOLLIN);
+static_assert(POLLOUT == EPOLLOUT);
+static_assert(POLLPRI == EPOLLPRI);
+static_assert(POLLHUP == EPOLLHUP);
+
 const int Channel::kNoneEvent = 0;
 const int Channel::kReadEvent = POLLIN | POLLPRI;
 const int Channel::kWriteEvent = POLLOUT;
+const int Channel::kETevent = EPOLLET;
+const int Channel::kETReadEvent = POLLIN | POLLPRI | EPOLLET;
+const int Channel::kETWriteEvent = POLLOUT | EPOLLET;
 
 Channel::Channel(EventLoop* loop, int fdarg)
     : loop_(loop),
@@ -61,6 +70,17 @@ void Channel::handleEvent()
     eventHandling = false;
 }
 
+void Channel::setETmode(bool on)
+{
+    if (on && !isNoneEvent() && !isETMode()) {
+        events_ |= kETevent;
+        update();
+    } else if (!on && isETMode()) {
+        events_ &= ~kETevent;
+        update();
+    }
+}
+
 std::string Channel::eventsToString() const
 {
     return eventsToString(fd_, events_);
@@ -88,5 +108,7 @@ std::string Channel::eventsToString(int fd, int ev)
         res.append("ERR ");
     if (ev & POLLNVAL)
         res.append("NVAL ");
+    if (ev & EPOLLET)
+        res.append("EPOLLET ");
     return res;
 }

@@ -4,11 +4,16 @@
 #include "net/inetaddress.h"
 #include "net/eventloop.h"
 #include "base/logging.h"
+#include "base/fileutil.h"
+using namespace server;
 using namespace server::net;
 using namespace std;
 
 extern char favicon[555];
 bool benchmark = false;
+
+static const string index_file = "/home/jxw/PycharmProjects/vs_code/c++/myserver/index.html";
+static string index_body = FileUtil::readFile(index_file);
 
 void onRequest(const HttpRequest& req, HttpResponse* resp)
 {
@@ -28,10 +33,11 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
         resp->setContentType("text/html");
         resp->addHeader("Server", "httpserver");
         // string now = Timestamp::now().toFormattedString();
-        resp->setBody("<html><head><title>This is title</title></head>"
-            "<body><h1>Hello</h1>Hello"
-            "</body></html>");
-        resp->setCloseConnection(true);
+        // resp->setBody("<html><head><title>This is title</title></head>"
+        //     "<body><h1>Hello</h1>Hello"
+        //     "</body></html>");
+        resp->setBody(index_body);
+        // resp->setCloseConnection(true);
     }
     else if (req.getPath() == "/favicon.ico")
     {
@@ -39,7 +45,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
         resp->setStatusMessage("OK");
         resp->setContentType("image/png");
         resp->setBody(string(favicon, sizeof favicon));
-        resp->setCloseConnection(true);
+        // resp->setCloseConnection(true);
     }
     else if (req.getPath() == "/hello")
     {
@@ -134,6 +140,7 @@ char favicon[555] = {
 
 int main(int argc, char* argv[])
 {
+    cout<<"body size: "<<index_body.size()<<endl;
     Logger::setLogLevel(Logger::TRACE);
     EventLoop loop;
     InetAddress listenaddr(1235);

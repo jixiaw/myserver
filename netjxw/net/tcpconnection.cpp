@@ -29,17 +29,19 @@ void server::net::defaultMessageCallback(const TcpConnectionPtr& conn, Buffer* b
 }
 
 TcpConnection::TcpConnection(EventLoop* loop, std::string& name, int sockfd, 
-                    const InetAddress& localAddr, const InetAddress& peerAddr)
+                    const InetAddress& localAddr, const InetAddress& peerAddr,
+                    bool epollET)
 : loop_(loop),
   name_(name),
   state_(kConnecting),
   reading_(true),
+  epollET_(epollET),
   socket_(new Socket(sockfd)),
   channel_(new Channel(loop, sockfd)),
   localAddr_(localAddr),
   peerAddr_(peerAddr),
-  pContext_(NULL),
-  highWaterMark_(64*1024*1024)
+  highWaterMark_(64*1024*1024),
+  pContext_(NULL)
 {
     channel_->setReadCallBack(std::bind(&TcpConnection::handleRead, this));
     channel_->setWriteCallBack(std::bind(&TcpConnection::handleWrite, this));
@@ -57,7 +59,11 @@ void TcpConnection::connectEstablish()
     loop_->assertInLoopThread();
     assert(state_ == kConnecting);
     setState(kConnected);
-    channel_->enableReading();
+    if (epollET_) {
+        channel_->enableETReading();
+    } else {
+        channel_->enableReading();
+    }
     connectionCallback_(shared_from_this());
 }
 
@@ -79,9 +85,20 @@ void TcpConnection::handleRead()
 {
     // char buf[4096];
     // ssize_t n = ::read(channel_->fd(), buf, sizeof buf);
-    ssize_t n = inputBuffer_.readFd(channel_->fd());
+    ssize_t n;
+    bool flag = false;
+    if (channel_->isETMode()) {
+        n = inputBuffer_.readLoop(channel_->fd(), flag);
+    } else {
+        n = inputBuffer_.readFd(channel_->fd());
+    }
+    LOG_DEBUG << "TcpConnection::handleRead() read " << n <<"bytes.";
     if (n > 0){
         messageCallback_(shared_from_this(), &inputBuffer_);
+        if (flag) {
+            // close wait状态
+            loop_->queueInLoop(std::bind(&TcpConnection::handleClose, this));
+        }
     } else if (n == 0) {
         handleClose();
     } else {
@@ -96,11 +113,15 @@ void TcpConnection::handleWrite()
     loop_->assertInLoopThread();
     // 有些channel可能已经关闭了
     if (channel_->isWriting()){
-        ssize_t n = ::write(channel_->fd(), 
-                    outputBuffer_.peek(), outputBuffer_.readableBytes());
+        ssize_t n;
+        if (channel_->isETMode()) {
+            n = outputBuffer_.writeLoop(channel_->fd());
+        } else {
+            n = outputBuffer_.writeFd(channel_->fd());
+        }
         LOG_DEBUG << "TcpConnection::handleWrite() write size " << n;
         if (n > 0) {
-            outputBuffer_.retrieve(n);
+            // outputBuffer_.retrieve(n);
             if (outputBuffer_.readableBytes() == 0) {
                 LOG_DEBUG << "TcpConnection::handleWrite() disablewrite.";
                 channel_->disableWriting();

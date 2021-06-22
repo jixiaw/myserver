@@ -9,6 +9,7 @@ using namespace server;
 
 std::string FileUtil::readFile(const std::string& filename)
 {
+    // printf("test readFile, filename: %s\n", filename.c_str());
     FILE* fp = ::fopen(filename.c_str(), "rb");
     std::string res;
     if (fp) {

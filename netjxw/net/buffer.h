@@ -21,6 +21,11 @@ public:
     {
     }
     ssize_t readFd(int fd);
+    // flag 表示最后一次读到 0 byte
+    ssize_t readLoop(int fd, bool& flag);  // for epoll ET
+
+    ssize_t writeFd(int fd);
+    ssize_t writeLoop(int fd);  // for epoll ET
 
     size_t readableBytes() const { return writeIdx_ - readIdx_; }
     size_t writableBytes() const { return buffer_.size() - writeIdx_; }

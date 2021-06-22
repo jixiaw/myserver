@@ -24,7 +24,8 @@ class EventLoopThreadPool;
 class TcpServer : noncopyable
 {
 public:
-    TcpServer(EventLoop* loop, const InetAddress& listenAddr, const std::string& name);
+    TcpServer(EventLoop* loop, const InetAddress& listenAddr, 
+                const std::string& name, bool epollET=false);
     ~TcpServer();
 
     void start();  // 开启监听
@@ -51,6 +52,7 @@ private:
     InetAddress localAddr_;
     const std::string ipPort_;
     const std::string name_;
+    bool epollET_;
     std::unique_ptr<Acceptor> acceptorPtr;
     ConnectionCallback connectionCallback_;  // 连接建立和断开时会调用，TcpConnection::connectEstablish和connectDestory
     MessageCallback messageCallback_;  // TcpConnection::handleRead调用

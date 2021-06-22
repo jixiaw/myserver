@@ -7,6 +7,7 @@ set(LIB_UTIL
     logstream.h
     threadpool.cpp
     fileutil.cpp
+    codecutil.cpp
     )
 
 add_library(base ${LIB_UTIL})

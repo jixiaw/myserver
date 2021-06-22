@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/uio.h>
 #include <algorithm>
+#include <error.h>
 
 using namespace server::net;
 using namespace server;
@@ -28,6 +29,63 @@ ssize_t Buffer::readFd(int fd)
         append(buf, n - writable);
     }
     return n;
+}
+
+ssize_t Buffer::readLoop(int fd, bool& flag)
+{
+    ssize_t n = readFd(fd);
+    if (n <= 0) return n;
+    // LOG_ERROR << "Buffer::readLoop()";
+    char buf[65536];
+    size_t bufsize = sizeof buf;
+    while (true) {
+        ssize_t m = ::read(fd, buf, bufsize);
+        if (m > 0) {
+            n += m;
+            append(buf, m);
+            if (m < bufsize) break;
+        } else if (m < 0) {
+            if (errno == EAGAIN) {
+                LOG_DEBUG << "Buffer::readLoop() read EAGAIN : ["<<n<<"]";
+                break;
+            } else if (errno == EINTR) {
+                LOG_DEBUG << "Buffer::readLoop() read EINTR : ["<<n<<"]";
+            } else {
+                LOG_ERROR << "Buffer::readLoop() read ERROR["<<errno<<"]";
+                return -1;
+            }
+        } else {
+            LOG_DEBUG << "Buffer::readLoop() read 0 byte";
+            flag = true;
+            // return 0;
+            break;
+        }
+    }
+    return n;
+}
+
+ssize_t Buffer::writeFd(int fd)
+{
+    ssize_t n = ::write(fd, peek(), readableBytes());
+    if (n > 0) {
+        retrieve(n);
+    }
+    return n;
+}
+
+ssize_t Buffer::writeLoop(int fd)
+{
+    ssize_t sum = 0;
+    while(readableBytes() > 0) {
+        ssize_t n = ::write(fd, peek(), readableBytes());
+        if (n <= 0) {
+            LOG_ERROR << "Buffer::writeLoop() error: ["<<errno <<"]";
+            break;
+        }
+        retrieve(n);
+        sum += n;
+    }
+    return sum;
 }
 
 void Buffer::append(const char* str, size_t len)

@@ -1,4 +1,4 @@
-include_directories(${PROJECT_SOURCE_DIR}/netjxw)
+include_directories(${PROJECT_SOURCE_DIR}/server)
 set(LIB_UTIL
     timestamp.cpp
     string_util.cpp

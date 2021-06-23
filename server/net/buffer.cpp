@@ -79,7 +79,7 @@ ssize_t Buffer::writeLoop(int fd)
     while(readableBytes() > 0) {
         ssize_t n = ::write(fd, peek(), readableBytes());
         if (n <= 0) {
-            LOG_ERROR << "Buffer::writeLoop() error: ["<<errno <<"]";
+            LOG_INFO << "Buffer::writeLoop() error: ["<<errno <<"]";
             break;
         }
         retrieve(n);

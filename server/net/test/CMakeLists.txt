@@ -1,4 +1,4 @@
-include_directories(${PROJECT_SOURCE_DIR}/netjxw)
+include_directories(${PROJECT_SOURCE_DIR}/server)
 add_executable(eventloop_test eventloop_test.cpp)
 target_link_libraries(eventloop_test net)
 target_link_libraries(eventloop_test ${CMAKE_THREAD_LIBS_INIT})
@@ -56,7 +56,3 @@ add_executable(file_downloader file_downloader.cpp)
 target_link_libraries(file_downloader net)
 target_link_libraries(file_downloader ${CMAKE_THREAD_LIBS_INIT})
 
-add_executable(file_httpdownload file_httpdownload.cpp)
-target_link_libraries(file_httpdownload net)
-target_link_libraries(file_httpdownload http)
-target_link_libraries(file_httpdownload ${CMAKE_THREAD_LIBS_INIT})

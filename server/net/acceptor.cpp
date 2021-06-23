@@ -37,6 +37,7 @@ void Acceptor::handleRead()
 {
     loop_->assertInLoopThread();
     InetAddress clientaddr;
+    int cnt = 0;
     while(true) {
     int connfd = acceptSocket_.accept(&clientaddr);
     if (connfd >= 0) {
@@ -45,9 +46,10 @@ void Acceptor::handleRead()
         } else {
             ::close(connfd);
         }
+        ++cnt;
+        LOG_DEBUG << "Acceptor::handleRead() accepts connfd: " << connfd << " total: "<<cnt;
     } else {
         break;
     }
-    LOG_DEBUG << "Acceptor::handleRead() accepts connfd: " << connfd;
     }
 }

@@ -1,6 +1,6 @@
-include_directories(${PROJECT_SOURCE_DIR}/netjxw)
+include_directories(${PROJECT_SOURCE_DIR}/server)
 #file(GLOB HEADERS "*.h")
-#install(FILES ${HEADERS} DESTINATION include/netjxw/net)
+#install(FILES ${HEADERS} DESTINATION include/server/net)
 
 set(APP_SRC 
     eventloop.cpp
@@ -23,8 +23,8 @@ set(APP_SRC
     )
 
 add_library(net ${APP_SRC})
-#target_include_directories(net PUBLIC netjxw/net)
-#target_include_directories(net PUBLIC netjxw/base)
+#target_include_directories(net PUBLIC server/net)
+#target_include_directories(net PUBLIC server/base)
 target_link_libraries(net base)
 
 
@@ -32,7 +32,7 @@ target_link_libraries(net base)
 #install(TARGETS net DESTINATION lib)
 
 #file(GLOB HEADERS "*.h")
-#install(FILES ${HEADERS} DESTINATION include/netjxw/net)
+#install(FILES ${HEADERS} DESTINATION include/server/net)
 
 add_subdirectory(http)
 add_subdirectory(test)

@@ -233,7 +233,7 @@ void TcpConnection::sendInLoop(const char* message, size_t len)
             }
         } else {
             nwrote = 0;
-            LOG_ERROR << "Error write in TcpConnection::sendInLoop.";
+            LOG_ERROR << "Error["<<errno<<"] write in TcpConnection::sendInLoop.";
         }
     }
     // 没有全部写进去，监听写事件

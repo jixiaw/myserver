@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "base/timestamp.h"
 #include "base/fileutil.h"
+#include "base/codecutil.h"
 #include <unistd.h>
 #include <algorithm>
 using namespace server;
@@ -33,7 +34,7 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
             std::cout << header.first << ": " << header.second << std::endl;
         }
     }
-    string path = cwd + req.getPath();
+    string path = cwd + CodecUtil::hex2str(req.getPath());
     FileUtil::FileType type = FileUtil::getType(path);
     if (type == FileUtil::T_DIR) {
         // text/html

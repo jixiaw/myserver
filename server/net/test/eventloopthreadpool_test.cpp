@@ -12,7 +12,7 @@ class EchoServer
 public:
     EchoServer(EventLoop* loop, const InetAddress& listenAddr, int numThread=4)
     :loop_(loop),
-     server_(loop, listenAddr, "echo server thread pool"),
+     server_(loop, listenAddr, "echo server thread pool", true),
      numThread_(numThread)
     {
         server_.setNumThread(numThread);
@@ -54,7 +54,7 @@ private:
 int main(int argc, char* argv[])
 {
     cout<<"pid = "<<getpid()<<endl;
-    Logger::setLogLevel(Logger::DEBUG);
+    Logger::setLogLevel(Logger::TRACE);
     if (argc > 1) {
         EventLoop loop;
         InetAddress listenaddr(stoi(argv[1]));

@@ -6,16 +6,19 @@
 using namespace server::net;
 
 
-TcpServer::TcpServer(EventLoop* loop, const InetAddress& listenAddr, const std::string& name)
+TcpServer::TcpServer(EventLoop* loop, const InetAddress& listenAddr, 
+                     const std::string& name, bool epollET)
+// 按照 .h 中类内定义顺序初始化
 : loop_(loop),
   localAddr_(listenAddr),
-  acceptorPtr(new Acceptor(loop, listenAddr)),
-  start_(false),
-  nextConnId_(0),
-  name_(name),
   ipPort_(listenAddr.toString()),
+  name_(name),
+  epollET_(epollET),
+  acceptorPtr(new Acceptor(loop, listenAddr)),
   connectionCallback_(server::net::defaultConnectionCallback),
   messageCallback_(server::net::defaultMessageCallback),
+  start_(false),
+  nextConnId_(0),
   threadPool_(new EventLoopThreadPool(loop))
 {
     acceptorPtr->setNewConnectCallback(std::bind(&TcpServer::newConnection, this, std::placeholders::_1, std::placeholders::_2));
@@ -51,7 +54,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peeraddr)
     LOG_INFO << "TcpServer::newConnection [" << name_ <<"] new connection [" << connName
              << "] from " << peeraddr.toString();
     EventLoop* loop = threadPool_->getLoop();
-    TcpConnectionPtr conn(new TcpConnection(loop, connName, sockfd, localAddr_, peeraddr));
+    TcpConnectionPtr conn(new TcpConnection(loop, connName, sockfd, localAddr_, peeraddr, epollET_));
     connectionMap_[connName] = conn;
     conn->setConnectionCallback(connectionCallback_);
     conn->setMessageCallback(messageCallback_);

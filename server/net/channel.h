@@ -32,15 +32,21 @@ public:
     int events() const {return events_;}
     void setRevents(int revt) {revents_ = revt;}
     bool isNoneEvent() const {return events_ == kNoneEvent;}
+    
+    void setETmode(bool on);
 
-    void enableReading() {events_ |= kReadEvent; update();}
-    void enableWriting() {events_ |= kWriteEvent; update();}
-    void disableWriting() {events_ &= ~kWriteEvent; update();}
+    void enableReading() { events_ |= kReadEvent; update(); }
+    void enableWriting() { events_ |= kWriteEvent; update(); }
+    void enableETReading() { events_ |= kETReadEvent; update(); }
+    void enableETWriting() { events_ |= kETWriteEvent; update(); }
+
+    void disableWriting() { events_ &= ~kWriteEvent; update(); }
     void disableReading() { events_ &= ~kReadEvent; update(); }
     void disableAll() {events_ = kNoneEvent; update(); }
 
     bool isWriting() const { return events_ & kWriteEvent; }
     bool isReading() const { return events_ & kReadEvent; }
+    bool isETMode() const { return events_ & kETevent; }
 
     int index() {return index_;};
     void setIndex(int idx) { index_ = idx; };
@@ -58,6 +64,9 @@ private:
     static const int kNoneEvent;
     static const int kReadEvent;
     static const int kWriteEvent;
+    static const int kETReadEvent;
+    static const int kETWriteEvent;
+    static const int kETevent;
 
     EventLoop* loop_;
     const int fd_;

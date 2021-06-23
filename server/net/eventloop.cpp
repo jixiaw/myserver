@@ -11,7 +11,7 @@
 using namespace server::net;
 
 __thread EventLoop* t_loopInThisThread = NULL;
-const int kPollTimeMs = 10000;
+const int kPollTimeMs = 100000;
 
 class IgnoreSigPipe{
 public:

@@ -14,7 +14,8 @@ class HttpServer : noncopyable
 {
 public:
     typedef std::function<void (const HttpRequest&, HttpResponse*)> HttpCallback;
-    HttpServer(EventLoop* loop, const InetAddress& listenAddr, const std::string& name);
+    HttpServer(EventLoop* loop, const InetAddress& listenAddr, 
+               const std::string& name, bool epollET=false);
     ~HttpServer();
 
     void start();

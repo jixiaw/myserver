@@ -6,8 +6,9 @@ using namespace server::net;
 
 HttpServer::HttpServer(EventLoop* loop, 
                        const InetAddress& listenAddr, 
-                       const std::string& name)
-: server_(loop, listenAddr, name)
+                       const std::string& name,
+                       bool epollET)
+: server_(loop, listenAddr, name, epollET)
 {    
     server_.setConnectionCallback(
         std::bind(&HttpServer::onConnection, this, std::placeholders::_1));

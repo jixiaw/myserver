@@ -88,6 +88,7 @@ void TcpConnection::handleRead()
     ssize_t n;
     bool flag = false;
     if (channel_->isETMode()) {
+        LOG_DEBUG << "TcpConnection::handleRead() ET mode";
         n = inputBuffer_.readLoop(channel_->fd(), flag);
     } else {
         n = inputBuffer_.readFd(channel_->fd());
@@ -113,18 +114,29 @@ void TcpConnection::handleWrite()
     loop_->assertInLoopThread();
     // 有些channel可能已经关闭了
     if (channel_->isWriting()){
+        if (outputBuffer_.readableBytes() == 0) {
+            // ET模式， 不关心写事件时，忽略
+            LOG_DEBUG << "TcpConnection::handleWrite() no data to write";
+            return;
+        }
         ssize_t n;
         if (channel_->isETMode()) {
+            LOG_DEBUG << "TcpConnection::handleWrite() ET mode";
             n = outputBuffer_.writeLoop(channel_->fd());
         } else {
             n = outputBuffer_.writeFd(channel_->fd());
         }
+        // 不需要循环
         LOG_DEBUG << "TcpConnection::handleWrite() write size " << n;
         if (n > 0) {
             // outputBuffer_.retrieve(n);
             if (outputBuffer_.readableBytes() == 0) {
-                LOG_DEBUG << "TcpConnection::handleWrite() disablewrite.";
-                channel_->disableWriting();
+                if (!channel_->isETMode()) {
+                    LOG_DEBUG << "TcpConnection::handleWrite() disablewrite.";
+                    // LT模式需要关闭写，ET不需要
+                    channel_->disableWriting();
+                }
+                LOG_DEBUG << "TcpConnection::handleWrite() write completely";
                 if (writeCompleteCallback_) {
                     loop_->queueInLoop(
                         std::bind(writeCompleteCallback_, shared_from_this()));
@@ -220,8 +232,8 @@ void TcpConnection::sendInLoop(const char* message, size_t len)
 {
     loop_->assertInLoopThread();
     ssize_t nwrote = 0;
-    // 如果缓冲区没有等待写的就直接写入
-    if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0) {
+    // 如果缓冲区没有等待写的就直接写入 `!channel_->isWriting() && `
+    if (outputBuffer_.readableBytes() == 0) {
         nwrote = ::write(channel_->fd(), message, len);
         if (nwrote >= 0) {
             if (static_cast<size_t>(nwrote) < len) {
@@ -233,7 +245,7 @@ void TcpConnection::sendInLoop(const char* message, size_t len)
             }
         } else {
             nwrote = 0;
-            LOG_ERROR << "Error["<<errno<<"] write in TcpConnection::sendInLoop.";
+            LOG_INFO << "Error["<<errno<<"] write in TcpConnection::sendInLoop.";
         }
     }
     // 没有全部写进去，监听写事件

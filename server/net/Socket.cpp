@@ -28,7 +28,7 @@ int Socket::accept(InetAddress* addr)
 void Socket::listen()
 {
     int ret;
-    ret = ::listen(sockfd_, 2048);
+    ret = ::listen(sockfd_, 1024);
     if (0 != ret) {
         LOG_ERROR << "Socket::listen() error: " << ret;
     }

@@ -34,6 +34,7 @@ public:
     const char* begin() const { return &*(buffer_.begin()); }
     char* begin() { return &*(buffer_.begin()); }
 
+    // peek of readable
     const char* peek() const { return begin() + readIdx_; }
     // char* peek() { return begin() + readIdx_; }
     

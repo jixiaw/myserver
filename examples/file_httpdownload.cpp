@@ -7,6 +7,7 @@
 #include "base/timestamp.h"
 #include "base/fileutil.h"
 #include "base/codecutil.h"
+#include "base/async_logging.h"
 #include <unistd.h>
 #include <algorithm>
 using namespace server;
@@ -77,10 +78,14 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
     }
 }
 
+void asynclog(const char* msg, int len) {
+    AsyncLogging::getLogInstance()->append(msg, len);
+}
 
 int main(int argc, char* argv[])
 {
     Logger::setLogLevel(Logger::DEBUG);
+    Logger::setOutput(asynclog);
     cwd = FileUtil::getcwd();
     EventLoop loop;
     InetAddress listenaddr(1235);

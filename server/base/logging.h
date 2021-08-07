@@ -3,6 +3,7 @@
 #include "logstream.h"
 #include "base/timestamp.h"
 #include <string>
+#include <functional>
 namespace server {
 
 class Logger 
@@ -24,12 +25,11 @@ public:
         logStream_ << t.toFormatString() << " ";
         logStream_ << getLevelString(level);
     }
-    ~Logger() {
-        logStream_.print();
-    }
+    ~Logger();
     static LogLevel getLogLevel();
     static void setLogLevel(LogLevel level);
-
+    typedef std::function<void(const char*, int)> OutputFunc;
+    static void setOutput(OutputFunc);
 
     static std::string getLevelString(LogLevel level)
     {
@@ -64,7 +64,6 @@ public:
 private:
     LogLevel tempLevel_;
     server::LogStream logStream_;
-
 };
 
 extern Logger::LogLevel g_logLevel;

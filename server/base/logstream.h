@@ -14,6 +14,11 @@ public:
         return *this;
     }
 
+    LogStream& operator<<(char c) {
+        data += c;
+        return *this;
+    }
+
     LogStream& operator<<(const std::string& x) {
         data += x;
         return *this;
@@ -61,7 +66,8 @@ public:
     }
 
     const std::string& getData() const { return data; }
-
+    const char* c_str() const { return data.c_str(); }
+    size_t size() const { return data.size(); }
     void print() {
         std::cout<<data<<std::endl;
         data.clear();

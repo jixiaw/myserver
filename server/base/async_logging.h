@@ -7,34 +7,68 @@
 #include <sys/file.h>
 #include <memory>
 #include <vector>
+#include <assert.h>
 #include <thread>
 #include "base/timestamp.h"
-#include "base/buffer.h"
+#include "base/logfile.h"
 namespace server {
+
+class LogBuffer {
+public:
+  LogBuffer(size_t size): data_(size), writeIdx_(0), readIdx_(0) {}
+  ~LogBuffer() {}
+
+public:
+  void append(const char* msg, size_t len) {
+    if (len > writableBytes()) {
+      data_.resize(data_.size() + len);
+    }
+    std::copy(msg, msg + len, beginWritable());
+    writeIdx_ += len;
+  }
+  char* begin() { return &*(data_.begin()); }
+  const char* begin() const { return &*(data_.begin()); }
+
+  char* beginWritable() { return begin() + writeIdx_; }
+  const char* peek() const { return begin() + readIdx_; }
+
+  size_t writableBytes() const { return data_.size() - writeIdx_; }
+  size_t readableBytes() const { return writeIdx_ - readIdx_; }
+  size_t size() const { return data_.size(); }
+  void retrieveAll() { readIdx_ = writeIdx_ = 0; }
+
+private:
+  std::vector<char> data_;
+  size_t writeIdx_;
+  size_t readIdx_;
+};
+
 
 class AsyncLogging {
 public:
-  typedef std::unique_ptr<Buffer> BufferPtr;
-private:
+  typedef std::unique_ptr<LogBuffer> BufferPtr;
+public:
   AsyncLogging(const std::string& name, const std::string& path, 
-               long maxSize=1*1024*1024*1024, size_t bufferSize=4*1024*1024)
+               long maxSize=10*1024*1024, size_t bufferSize=4*1024*1024)
   : name_(name), 
     path_(path), 
     maxSize_(maxSize), 
-    fp_(NULL), 
     bufferSize_(bufferSize), 
-    currentBuffer_(new Buffer(bufferSize)),
-    threadLog_(std::bind(&AsyncLogging::threadFunc, this)) 
-  {
-    updataFileName();
-  }
+    currentBuffer_(new LogBuffer(bufferSize)),
+    running_(true),
+    threadLog_(std::bind(&AsyncLogging::threadFunc, this)) {}
   ~AsyncLogging() {
-    if (fp_) {
-      ::fclose(fp_);
-    }
+    stop();
   }
 
 public:
+  void stop() {
+    if (running_) {
+      running_ = false;
+      cond_.notify_all();
+      threadLog_.join();
+    }
+  }
   void append(const std::string& msg) {
     append(msg.c_str(), msg.size());
   }
@@ -47,7 +81,7 @@ public:
       if (nextBuffer_) {
         currentBuffer_ = std::move(nextBuffer_);
       } else {
-        currentBuffer_.reset(new Buffer(bufferSize_));
+        currentBuffer_.reset(new LogBuffer(bufferSize_));
       }
       currentBuffer_->append(msg, len);
       cond_.notify_one();
@@ -55,9 +89,10 @@ public:
   }
 
   void threadFunc() {
-    BufferPtr newBuffer1(new Buffer(bufferSize_));
-    BufferPtr newBuffer2(new Buffer(bufferSize_));
+    BufferPtr newBuffer1(new LogBuffer(bufferSize_));
+    BufferPtr newBuffer2(new LogBuffer(bufferSize_));
     std::vector<BufferPtr> writeBufferVec;
+    LogFile logfile(path_, name_, maxSize_);
     while(running_) {
       {
         std::unique_lock<std::mutex> lock(mutex_);
@@ -72,7 +107,7 @@ public:
         writeBufferVec.swap(bufferVec_);
       }
       for (int i = 0; i < writeBufferVec.size(); ++i) {
-        fileWrite(writeBufferVec[i]->peek(), writeBufferVec[i]->readableBytes());
+        logfile.append(writeBufferVec[i]->peek(), writeBufferVec[i]->readableBytes());
         writeBufferVec[i]->retrieveAll();
       }
       if (!newBuffer1) {
@@ -83,30 +118,12 @@ public:
         if (writeBufferVec.size() >= 2) {
           newBuffer2 = std::move(writeBufferVec[1]);
         } else {
-          newBuffer2.reset(new Buffer(bufferSize_));
+          newBuffer2.reset(new LogBuffer(bufferSize_));
         }
       }
-      ::fflush(fp_);
+      logfile.flush();
       writeBufferVec.clear();
     }
-  }
-
-  void fileWrite(const char* msg, int len) {
-    size_t n = ::fwrite(msg, 1, len, fp_);
-    assert(n == static_cast<size_t>(len));
-    long size = ftell(fp_);
-    if (size > maxSize_) {
-      updataFileName();
-    }
-    // ::fflush(fp_);
-  }
-
-  void updataFileName() {
-    std::string newName = path_ + '/' + name_ + "-" + TimeStamp::now().toFormatString(false) + ".log";
-    if (fp_) {
-      ::fclose(fp_);
-    }
-    fp_ = ::fopen(newName.c_str(), "wb");
   }
 
   static AsyncLogging* getLogInstance() { return &log_; }
@@ -119,7 +136,6 @@ private:
   std::string path_;
   size_t bufferSize_;
   long maxSize_;
-  FILE* fp_;
   volatile bool running_;
   std::thread threadLog_;
   std::mutex mutex_;

@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
     Logger::setLogLevel(Logger::TRACE);
     EventLoop loop;
     InetAddress listenaddr(1235);
-    HttpServer server(&loop, listenaddr, "httpserver");
+    HttpServer server(&loop, listenaddr, "httpserver", true);
     server.setHttpCallback(onRequest);
     if (argc > 1) {
         Logger::setLogLevel(Logger::ERROR);

@@ -56,3 +56,6 @@ add_executable(file_downloader file_downloader.cpp)
 target_link_libraries(file_downloader net)
 target_link_libraries(file_downloader ${CMAKE_THREAD_LIBS_INIT})
 
+add_executable(file_receive file_receive.cpp)
+target_link_libraries(file_receive net)
+target_link_libraries(file_receive ${CMAKE_THREAD_LIBS_INIT})

@@ -93,7 +93,6 @@ void TcpConnection::handleRead()
     } else {
         n = inputBuffer_.readFd(channel_->fd());
     }
-    LOG_DEBUG << "TcpConnection::handleRead() read " << n <<"bytes.";
     if (n > 0){
         messageCallback_(shared_from_this(), &inputBuffer_);
         if (flag) {

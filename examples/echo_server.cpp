@@ -12,7 +12,7 @@ class EchoServer
 public:
     EchoServer(EventLoop* loop, const InetAddress& listenAddr, int numThread=4)
     :loop_(loop),
-     server_(loop, listenAddr, "echo server thread pool", false),
+     server_(loop, listenAddr, "echo server thread pool", true),
      numThread_(numThread)
     {
         server_.setNumThread(numThread);

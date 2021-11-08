@@ -145,7 +145,7 @@ private:
   std::vector<BufferPtr> bufferVec_;
 };
 
-AsyncLogging AsyncLogging::log_("TcpServer", "/home/ubuntu/project/myserver/build/logs");
+AsyncLogging AsyncLogging::log_("TcpServer", "./");
 
 }
 

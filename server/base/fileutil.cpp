@@ -78,3 +78,23 @@ FileUtil::FileType FileUtil::getType(const std::string& path)
     }
     return UNKNOWN;
 }
+
+std::string FileUtil::getExt(const std::string& path) 
+{
+    if (path.empty()) {
+        return "";
+    }
+    int pos = -1;
+    for (int i = static_cast<int>(path.size() - 1); i >= 0; --i) {
+        if (path[i] == '.') {
+            pos = i + 1;
+        } else if (path[i] == '/') {
+            break;
+        }
+    }
+    if (pos != -1) {
+        return path.substr(pos);
+    }
+    return "";
+}
+

@@ -5,6 +5,7 @@
 #include "net/eventloop.h"
 #include "base/logging.h"
 #include "base/fileutil.h"
+#include "base/async_logging.h"
 using namespace server;
 using namespace server::net;
 using namespace std;
@@ -12,6 +13,11 @@ using namespace std;
 extern char favicon[555];
 bool benchmark = false;
 
+void outputFunc(const char* msg, int len) {
+    AsyncLogging::getLogInstance()->append(msg, len);
+}
+
+static const string path = "/home/jxw/PycharmProjects/vs_code/c++/TinyWebServer/root/";
 static const string index_file = "/home/jxw/PycharmProjects/vs_code/c++/myserver/index.html";
 static string index_body = FileUtil::readFile(index_file);
 
@@ -51,9 +57,18 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
     }
     else
     {
-        resp->setStatusCode(HttpResponse::k404NotFound);
-        resp->setStatusMessage("Not Found");
-        resp->setCloseConnection(true);
+        string file_name = path + req.getPath();
+        string content = FileUtil::readFile(file_name);
+        if (content.empty()) {
+            resp->setStatusCode(HttpResponse::k404NotFound);
+            resp->setStatusMessage("Not Found");
+            resp->setCloseConnection(true);
+        } else {
+            resp->setStatusCode(HttpResponse::k200Ok);
+            resp->setStatusMessage("OK");
+            resp->setBody(content);
+        }
+        
     }
 }
 
@@ -63,8 +78,10 @@ int main(int argc, char* argv[])
 {
     cout<<"body size: "<<index_body.size()<<endl;
     Logger::setLogLevel(Logger::TRACE);
+    Logger::setOutput(outputFunc);
     EventLoop loop;
-    InetAddress listenaddr(1235);
+    InetAddress listenaddr(1236);
+    printf("listen in 1236\n");
     HttpServer server(&loop, listenaddr, "httpserver", true);
     server.setHttpCallback(onRequest);
     if (argc > 1) {

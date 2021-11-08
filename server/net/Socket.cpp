@@ -32,7 +32,7 @@ void Socket::listen()
     if (0 != ret) {
         LOG_ERROR << "Socket::listen() error: " << ret;
     }
-    LOG_INFO << "Socket::listen() start listenning";
+    LOG_INFO << "Socket::listen() at port [" << getLocalPort(sockfd_) << "] start listenning";
 }
 
 void Socket::bind(const InetAddress& addr)
@@ -94,6 +94,12 @@ struct sockaddr_in Socket::getPeerAddr(int sockfd)
         LOG_ERROR << "Socket::getPeerAddr";
     }
     return peeraddr;
+}
+
+uint16_t Socket::getLocalPort(int sockfd)
+{
+    struct sockaddr_in addr = getLocalAddr(sockfd);
+    return ntohs(addr.sin_port);
 }
 
 int Socket::getSocketError(int sockfd) 

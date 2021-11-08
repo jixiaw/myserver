@@ -10,6 +10,7 @@
 #include "base/async_logging.h"
 #include <unistd.h>
 #include <algorithm>
+#include <set>
 using namespace server;
 using namespace server::net;
 using namespace std;
@@ -24,6 +25,8 @@ string html[] =  {"<html><head><title>",
 "</h1><hr><ul>",
 "</ul><hr></body></html>"};
 string li = "<li><a href=\"%s\">%s</a></li>";
+
+std::set<string> textExtNameSet = {"log"};
 
 void onRequest(const HttpRequest& req, HttpResponse* resp)
 {
@@ -63,8 +66,13 @@ void onRequest(const HttpRequest& req, HttpResponse* resp)
         string content = FileUtil::readFile(path);
         resp->setStatusCode(HttpResponse::k200Ok);
         resp->setStatusMessage("OK");
-        // resp->setContentType("text/plain; charset=UTF-8");
-        resp->setContentType("application/octet-stream; charset=UTF-8");
+        if (textExtNameSet.find(FileUtil::getExt(path)) != textExtNameSet.end()) {
+            // not download, only display
+            resp->setContentType("text/plain; charset=UTF-8");
+        } else {
+            // download
+            resp->setContentType("application/octet-stream; charset=UTF-8");
+        }
         resp->addHeader("Server", "file_downloader");
         resp->setBody(content);
         LOG_INFO << "onRequest() sent stream 200 ok";
@@ -84,8 +92,8 @@ void asynclog(const char* msg, int len) {
 
 int main(int argc, char* argv[])
 {
-    Logger::setLogLevel(Logger::DEBUG);
-    Logger::setOutput(asynclog);
+    Logger::setLogLevel(Logger::INFO);
+    // Logger::setOutput(asynclog);
     cwd = FileUtil::getcwd();
     EventLoop loop;
     InetAddress listenaddr(1235);

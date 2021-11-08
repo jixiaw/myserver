@@ -30,6 +30,7 @@ public:
     static int createNonblockingSocket();
     static struct sockaddr_in getLocalAddr(int sockfd);
     static struct sockaddr_in getPeerAddr(int sockfd);
+    uint16_t getLocalPort(int sockfd);
     static int getSocketError(int sockfd);
     void setReuseAddr(bool on);
     void setReusePort(bool on);

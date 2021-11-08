@@ -18,6 +18,7 @@ public:
     static bool isdir(const std::string& path);
     static FileType getType(const std::string& path);
     static std::string getcwd();
+    static std::string getExt(const std::string& path);
 };
 }
 
